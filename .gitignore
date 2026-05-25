@@ -1,3 +1,4 @@
+## Android / Gradle
 *.iml
 .gradle
 /local.properties
@@ -13,3 +14,16 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+## Node (backend, web)
+node_modules/
+dist/
+.next/
+coverage/
+.env
+.env.local
+.env.*.local
+*.log
+
+## Misc
+.vscode/

@@ -1,0 +1,188 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String    @id @default(cuid())
+  email            String    @unique @db.VarChar(255)
+  locale           String    @default("fr") @db.VarChar(8)
+  stripeCustomerId String?   @unique @db.VarChar(64)
+  gdprConsentAt    DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  deletedAt        DateTime?
+
+  sessions       Session[]
+  apiTokens      ApiToken[]
+  subscriptions  Subscription[]
+  paymentMethods PaymentMethod[]
+  invoices       Invoice[]
+  usageEvents    UsageEvent[]
+  usageMonthly   UsageMonthly[]
+  auditLogs      AuditLog[]
+
+  @@index([deletedAt])
+}
+
+// Auth code is keyed by email, not user_id: the user may not exist yet on first request.
+// On successful verify, the user is created if needed.
+model AuthCode {
+  id        String    @id @default(cuid())
+  email     String    @db.VarChar(255)
+  codeHash  String    @db.VarChar(255)
+  expiresAt DateTime
+  usedAt    DateTime?
+  attempts  Int       @default(0)
+  ip        String?   @db.VarChar(45)
+  createdAt DateTime  @default(now())
+
+  @@index([email, createdAt])
+  @@index([expiresAt])
+}
+
+model Session {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String   @unique @db.VarChar(255)
+  expiresAt  DateTime
+  lastSeenAt DateTime @default(now())
+  userAgent  String?  @db.VarChar(512)
+  ip         String?  @db.VarChar(45)
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// Long-lived bearer token used by the Android keyboard.
+// One token per device; revocable from the web dashboard.
+model ApiToken {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String    @unique @db.VarChar(255)
+  label      String    @db.VarChar(100)
+  lastUsedAt DateTime?
+  createdAt  DateTime  @default(now())
+  revokedAt  DateTime?
+
+  usageEvents UsageEvent[]
+
+  @@index([userId])
+}
+
+enum SubscriptionStatus {
+  trialing
+  active
+  past_due
+  canceled
+  incomplete
+  incomplete_expired
+  unpaid
+  paused
+}
+
+model Subscription {
+  id                 String             @id @default(cuid())
+  userId             String
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripeSubId        String             @unique @db.VarChar(64)
+  plan               String             @db.VarChar(50)
+  status             SubscriptionStatus
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  trialEnd           DateTime?
+  cancelAt           DateTime?
+  canceledAt         DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+// Non-sensitive card metadata only. The full PAN/CVV is never stored — Stripe holds it.
+model PaymentMethod {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripePmId String   @unique @db.VarChar(64)
+  brand      String   @db.VarChar(20)
+  last4      String   @db.Char(4)
+  expMonth   Int
+  expYear    Int
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Invoice {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripeInvoiceId String    @unique @db.VarChar(64)
+  amountCents     Int
+  currency        String    @db.Char(3)
+  status          String    @db.VarChar(20)
+  pdfUrl          String?   @db.VarChar(512)
+  hostedUrl       String?   @db.VarChar(512)
+  periodStart     DateTime
+  periodEnd       DateTime
+  paidAt          DateTime?
+  createdAt       DateTime  @default(now())
+
+  @@index([userId])
+}
+
+// One row per /v1/correct call. Never store the text itself — only metrics.
+model UsageEvent {
+  id         BigInt   @id @default(autoincrement())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  apiTokenId String?
+  apiToken   ApiToken? @relation(fields: [apiTokenId], references: [id], onDelete: SetNull)
+  ts         DateTime @default(now())
+  wordsIn    Int
+  charsIn    Int
+  model      String   @db.VarChar(50)
+  latencyMs  Int
+  success    Boolean
+  httpStatus Int
+
+  @@index([userId, ts])
+  @@index([ts])
+}
+
+// Pre-aggregated for fast dashboard reads.
+model UsageMonthly {
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  yearMonth String   @db.Char(7)
+  requests  Int      @default(0)
+  words     Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  @@id([userId, yearMonth])
+  @@index([yearMonth])
+}
+
+model AuditLog {
+  id        BigInt   @id @default(autoincrement())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String   @db.VarChar(100)
+  ip        String?  @db.VarChar(45)
+  userAgent String?  @db.VarChar(512)
+  metadata  Json?
+  ts        DateTime @default(now())
+
+  @@index([userId, ts])
+  @@index([action, ts])
+}
