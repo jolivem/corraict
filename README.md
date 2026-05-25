@@ -28,7 +28,7 @@ La clé Mistral ne quitte jamais le backend. L'app Android et le site web s'auth
 |---|---|---|
 | [`app/`](app/) | Clavier IME Android (existant) | Kotlin, Android SDK |
 | [`backend/`](backend/) | API REST aicorrect.app | NestJS, Prisma, MariaDB |
-| `web/` *(à venir)* | Site public + dashboard utilisateur | Next.js 15, next-intl |
+| [`web/`](web/) | Site public + dashboard utilisateur | Next.js 15, next-intl, Tailwind |
 | [`docker-compose.yml`](docker-compose.yml) | MariaDB + Redis pour le dev local | — |
 
 ## Démarrage rapide (backend)
@@ -45,6 +45,22 @@ npm run start:dev
 ```
 
 Voir [`backend/README.md`](backend/README.md) pour les détails.
+
+## Démarrage rapide (frontend)
+
+Le backend doit déjà tourner sur `http://localhost:3000`.
+
+```bash
+cd web
+cp .env.example .env                # NEXT_PUBLIC_API_URL=http://localhost:3000 par défaut
+npm install
+npm run dev
+# → http://localhost:3001 (FR par défaut, /en pour l'anglais)
+```
+
+Flow complet : ouvrir `http://localhost:3001`, cliquer **Se connecter**, saisir un email, le code à 6 chiffres apparaît dans la console du backend (fallback dev tant que `RESEND_API_KEY` est vide), le valider → redirige sur `/fr/dashboard`.
+
+Voir [`web/README.md`](web/README.md) pour les détails.
 
 ## App Android (existant)
 
@@ -63,13 +79,13 @@ Voir [`app/`](app/) — projet Android Studio standard (`build.gradle.kts`).
 
 Sprints d'une semaine, ordre indicatif :
 
-1. ✅ Infra & skeleton backend (en cours)
-2. Auth email code + sessions + api tokens
-3. Endpoint `/v1/correct` (passe-plat Mistral + tracking)
-4. Intégration Stripe (plans, checkout, webhooks)
-5. Frontend landing + login (Next.js, FR/EN)
-6. Dashboard utilisateur (usage, factures, tokens)
-7. RGPD + pages légales
+1. ✅ Infra & skeleton backend
+2. ✅ Auth email code + sessions + api tokens
+3. ✅ Endpoint `/v1/correct` (passe-plat Mistral + tracking)
+4. ✅ Intégration Stripe (plans, checkout, webhooks)
+5. ✅ Frontend landing + login (Next.js, FR/EN)
+6. ✅ Dashboard utilisateur (usage, factures, tokens)
+7. ✅ RGPD + pages légales
 8. Migration de l'app Android vers le backend
 9. Beta fermée
 10. Lancement public
