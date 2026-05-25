@@ -5,9 +5,9 @@ API REST pour `aicorrect.app` — NestJS + Prisma + MariaDB.
 ## Démarrage local
 
 ```bash
-# 1. Démarrer MariaDB + Redis depuis la racine du repo
+# 1. Démarrer MariaDB + Redis depuis la racine du repo (compose dédié au dev)
 cd ..
-docker compose up -d
+docker compose -f docker-compose.dev.yml up -d
 
 # 2. Installer les dépendances
 cd backend

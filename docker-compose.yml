@@ -1,0 +1,86 @@
+# Production stack — déployé sur le VPS Hetzner.
+# Pour le dev local (juste les services d'infra), utiliser docker-compose.dev.yml.
+#
+# Le reverse proxy Caddy vit dans le repo clairimmo (déployé sur le même VPS).
+# Les containers backend/web s'attachent au network externe `caddy_network`
+# auquel le caddy de clairimmo est aussi connecté → routing transparent.
+# À créer une seule fois sur le VPS : `docker network create caddy_network`.
+
+services:
+  mariadb:
+    image: mariadb:10.11
+    container_name: aicorrect-mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${MARIADB_DATABASE:-aicorrect}
+      MARIADB_USER: ${MARIADB_USER:-aicorrect}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD:?MARIADB_PASSWORD is required}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:?MARIADB_ROOT_PASSWORD is required}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # Pas de ports exposés en prod — accès uniquement via le network Docker.
+
+  backend:
+    image: ghcr.io/jolivem/aicorrect-backend:${BACKEND_IMAGE_TAG:-latest}
+    container_name: aicorrect-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: mysql://${MARIADB_USER:-aicorrect}:${MARIADB_PASSWORD}@mariadb:3306/${MARIADB_DATABASE:-aicorrect}
+      PUBLIC_WEB_URL: ${PUBLIC_WEB_URL:-https://aicorrect.app}
+      SESSION_COOKIE_DOMAIN: ${SESSION_COOKIE_DOMAIN:-.aicorrect.app}
+
+      MISTRAL_API_KEY: ${MISTRAL_API_KEY:?MISTRAL_API_KEY is required}
+      CORRECT_DEFAULT_MODEL: ${CORRECT_DEFAULT_MODEL:-mistral-small-latest}
+      CORRECT_MAX_INPUT_CHARS: ${CORRECT_MAX_INPUT_CHARS:-5000}
+
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_PRO_PRICE_ID: ${STRIPE_PRO_PRICE_ID:-}
+      STRIPE_TRIAL_DAYS: ${STRIPE_TRIAL_DAYS:-7}
+
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-AiCorrect <no-reply@aicorrect.app>}
+
+      AUTH_CODE_TTL_SECONDS: ${AUTH_CODE_TTL_SECONDS:-600}
+      AUTH_CODE_LENGTH: ${AUTH_CODE_LENGTH:-6}
+      SESSION_TTL_SECONDS: ${SESSION_TTL_SECONDS:-2592000}
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    networks:
+      - default
+      - caddy_network
+
+  web:
+    image: ghcr.io/jolivem/aicorrect-web:${WEB_IMAGE_TAG:-latest}
+    container_name: aicorrect-web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      HOSTNAME: 0.0.0.0
+      # URL interne utilisée par les server components Next.js
+      API_URL: http://aicorrect-backend:3000
+      # URL publique — pour info, déjà bakée dans le bundle client au build
+      NEXT_PUBLIC_API_URL: ${PUBLIC_API_URL:-https://api.aicorrect.app}
+      SESSION_COOKIE_NAME: ${SESSION_COOKIE_NAME:-aicorrect_session}
+    depends_on:
+      - backend
+    networks:
+      - default
+      - caddy_network
+
+networks:
+  default:
+  caddy_network:
+    external: true
+
+volumes:
+  mariadb_data:
