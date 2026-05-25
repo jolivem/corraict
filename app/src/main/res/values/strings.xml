@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AICorrect</string>
+    <string name="ime_label">Clavier AiCorrect</string>
+    <string name="subtype_french">Français</string>
+    <string name="subtype_english">English</string>
+    <string name="btn_correct">Corriger</string>
+    <string name="hint_correct">Appuie sur Corriger pour tester le prototype</string>
+    <string name="settings_title">Paramètres</string>
+    <string name="label_autocorrect">Activer la correction automatique</string>
+    <string name="label_language">Langue du correcteur</string>
+    <string name="btn_save">Enregistrer</string>
+    <string name="toast_settings_saved">Paramètres enregistrés</string>
+    <string name="language_french">Français</string>
+    <string name="language_english">Anglais</string>
+    <string name="key_space">espace</string>
+    <string name="label_provider">Fournisseur d\'IA</string>
+    <string name="label_api_key">Clé API</string>
+    <string name="hint_api_key">Colle ta clé ici</string>
+    <string name="label_model">Modèle</string>
+    <string name="provider_mistral">Mistral</string>
+    <string name="toast_no_api_key">Aucune clé API configurée</string>
+    <string name="toast_correcting">Correction en cours…</string>
+    <string name="toast_correction_failed">Échec de la correction</string>
+    <string name="key_symbols_toggle">\?123</string>
+    <string name="key_letters_toggle">ABC</string>
+    <string name="btn_test_connection">Tester la connexion</string>
+    <string name="btn_test_connection_in_progress">Test en cours…</string>
+    <string name="toast_test_no_key">Saisis d\'abord une clé API</string>
+    <string name="toast_test_success">Connexion OK ✓</string>
+    <string name="toast_test_failed">Échec : %1$s</string>
+</resources>
