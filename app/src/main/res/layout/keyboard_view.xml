@@ -18,7 +18,8 @@
             android:layout_weight="1"
             android:text="@string/btn_correct"
             android:textAllCaps="false"
-            android:backgroundTint="@android:color/holo_blue_light"
+            android:background="@drawable/key_bg"
+            android:backgroundTint="@color/accent_correct"
             android:textColor="@android:color/white"
             android:layout_margin="2dp" />
 
@@ -31,7 +32,8 @@
             android:minWidth="56dp"
             android:paddingLeft="12dp"
             android:paddingRight="12dp"
-            android:backgroundTint="@android:color/holo_orange_light"
+            android:background="@drawable/key_bg"
+            android:backgroundTint="@color/accent_emoji"
             android:textColor="@android:color/white"
             android:layout_margin="2dp" />
     </LinearLayout>
@@ -127,13 +129,14 @@
             <Button android:id="@+id/keyComma" style="@style/Key" android:text="," />
             <Button android:id="@+id/keySpace"
                 android:layout_width="0dp"
-                android:layout_height="32dp"
+                android:layout_height="44dp"
                 android:layout_weight="4"
                 android:layout_margin="2dp"
                 android:text="@string/key_space"
                 android:textAllCaps="false"
                 android:textColor="@android:color/white"
-                android:backgroundTint="#2A2A2A" />
+                android:background="@drawable/key_bg"
+                android:backgroundTint="@color/key_surface" />
             <Button android:id="@+id/keyPeriod" style="@style/Key" android:text="." />
             <Button android:id="@+id/keyEnter" style="@style/KeyWide" android:text="↵" />
         </LinearLayout>
@@ -146,6 +149,23 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:visibility="gone">
+
+        <LinearLayout
+            android:id="@+id/symRowDigits"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <Button style="@style/Key" android:text="1" />
+            <Button style="@style/Key" android:text="2" />
+            <Button style="@style/Key" android:text="3" />
+            <Button style="@style/Key" android:text="4" />
+            <Button style="@style/Key" android:text="5" />
+            <Button style="@style/Key" android:text="6" />
+            <Button style="@style/Key" android:text="7" />
+            <Button style="@style/Key" android:text="8" />
+            <Button style="@style/Key" android:text="9" />
+            <Button style="@style/Key" android:text="0" />
+        </LinearLayout>
 
         <LinearLayout
             android:id="@+id/symRow1"
@@ -207,13 +227,14 @@
             <Button android:id="@+id/keyCommaSym" style="@style/Key" android:text="," />
             <Button android:id="@+id/keySpaceSym"
                 android:layout_width="0dp"
-                android:layout_height="32dp"
+                android:layout_height="44dp"
                 android:layout_weight="4"
                 android:layout_margin="2dp"
                 android:text="@string/key_space"
                 android:textAllCaps="false"
                 android:textColor="@android:color/white"
-                android:backgroundTint="#2A2A2A" />
+                android:background="@drawable/key_bg"
+                android:backgroundTint="@color/key_surface" />
             <Button android:id="@+id/keyPeriodSym" style="@style/Key" android:text="." />
             <Button android:id="@+id/keyEnterSym" style="@style/KeyWide" android:text="↵" />
         </LinearLayout>

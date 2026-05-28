@@ -84,6 +84,7 @@ class CorrectKeyboardService : InputMethodService() {
     }
 
     private fun bindSymbolsPanel(root: View) {
+        bindSymbolRow(root.findViewById(R.id.symRowDigits))
         bindSymbolRow(root.findViewById(R.id.symRow1))
         bindSymbolRow(root.findViewById(R.id.symRow2))
         bindSymbolRow(root.findViewById(R.id.symRow3))
@@ -281,6 +282,10 @@ class CorrectKeyboardService : InputMethodService() {
 
     override fun onStartInputView(info: EditorInfo?, restarting: Boolean) {
         super.onStartInputView(info, restarting)
+        inputView?.let { view ->
+            showSymbolsPanel(view, false)
+            view.findViewById<View>(R.id.emojiPanel).visibility = View.GONE
+        }
     }
 
     private fun applyNavigationBarInset(root: View) {
@@ -472,7 +477,7 @@ class CorrectKeyboardService : InputMethodService() {
         private const val REPEAT_INTERVAL_MS = 50L
         private const val ANIM_PASS_DURATION_MS = 700L
         private const val NAV_BAR_FALLBACK_DP = 48f
-        private const val WAVE_CORNER_RADIUS_DP = 4f
+        private const val WAVE_CORNER_RADIUS_DP = 3f
         private const val WAVE_BASE_COLOR = 0xFF33B5E5.toInt()       // holo_blue_light (tint XML)
         private const val WAVE_HIGHLIGHT_COLOR = 0xFFFFFFFF.toInt()  // blanc lumineux
         private val EMOJIS = listOf(
