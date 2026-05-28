@@ -154,7 +154,7 @@
                 android:background="@drawable/key_bg"
                 android:backgroundTint="@color/key_surface" />
             <Button android:id="@+id/keyPeriod" style="@style/Key" android:text="." />
-            <Button android:id="@+id/keyEnter" style="@style/KeyWide" android:text="↵" />
+            <Button android:id="@+id/keyEnter" style="@style/KeyWide" android:text="⏎" android:textSize="24sp" />
         </LinearLayout>
     </LinearLayout>
 
@@ -252,7 +252,7 @@
                 android:background="@drawable/key_bg"
                 android:backgroundTint="@color/key_surface" />
             <Button android:id="@+id/keyPeriodSym" style="@style/Key" android:text="." />
-            <Button android:id="@+id/keyEnterSym" style="@style/KeyWide" android:text="↵" />
+            <Button android:id="@+id/keyEnterSym" style="@style/KeyWide" android:text="⏎" android:textSize="24sp" />
         </LinearLayout>
     </LinearLayout>
 

@@ -46,6 +46,7 @@ class CorrectKeyboardService : InputMethodService() {
     private var correctionInProgress = false
     private var correctionOriginal: String? = null
     private var lastOriginalText: String? = null
+    private var lastCorrectedLength = 0
     private var waveAnimator: ValueAnimator? = null
     private var waveDrawable: WaveBackgroundDrawable? = null
     private var pendingResult: PendingResult? = null
@@ -348,12 +349,10 @@ class CorrectKeyboardService : InputMethodService() {
         val language = getSelectedLanguage()
 
         ic.finishComposingText()
-        val before = ic.getTextBeforeCursor(MAX_CHARS, 0)?.toString().orEmpty()
-        val after = ic.getTextAfterCursor(MAX_CHARS, 0)?.toString().orEmpty()
-        val original = before + after
+        val original = ic.getSelectedText(0)?.toString().orEmpty()
 
         if (original.isBlank()) {
-            Toast.makeText(this, "Rien à corriger", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Sélectionnez le texte à corriger", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -380,11 +379,12 @@ class CorrectKeyboardService : InputMethodService() {
 
     private fun finalizeCorrection(result: PendingResult) {
         stopCorrectionAnimation()
-        replaceWholeField(result.text)
+        currentInputConnection?.commitText(result.text, 1)
         correctionInProgress = false
         pendingResult = null
         if (result.errorMsg == null) {
             lastOriginalText = correctionOriginal
+            lastCorrectedLength = result.text.length
         }
         correctionOriginal = null
         updateUndoEnabled()
@@ -400,7 +400,11 @@ class CorrectKeyboardService : InputMethodService() {
     private fun undoCorrection() {
         if (correctionInProgress) return
         val original = lastOriginalText ?: return
-        replaceWholeField(original)
+        val ic = currentInputConnection ?: return
+        ic.beginBatchEdit()
+        ic.deleteSurroundingText(lastCorrectedLength, 0)
+        ic.commitText(original, 1)
+        ic.endBatchEdit()
         lastOriginalText = null
         updateUndoEnabled()
     }
@@ -454,16 +458,6 @@ class CorrectKeyboardService : InputMethodService() {
         correctButtonOriginalTint = null
     }
 
-    private fun replaceWholeField(newText: String) {
-        val ic = currentInputConnection ?: return
-        ic.beginBatchEdit()
-        val curBefore = ic.getTextBeforeCursor(MAX_CHARS, 0)?.toString().orEmpty()
-        val curAfter = ic.getTextAfterCursor(MAX_CHARS, 0)?.toString().orEmpty()
-        ic.deleteSurroundingText(curBefore.length, curAfter.length)
-        ic.commitText(newText, 1)
-        ic.endBatchEdit()
-    }
-
     private fun migrateLegacyApiKey(prefs: SharedPreferences) {
         val legacy = prefs.getString(KEY_API_KEY, null)
         if (!legacy.isNullOrBlank()) {
@@ -497,7 +491,6 @@ class CorrectKeyboardService : InputMethodService() {
         private const val KEY_MODEL = "model"
         private const val DEFAULT_LANGUAGE = "fr"
         private const val DEFAULT_MODEL = "mistral-small-latest"
-        private const val MAX_CHARS = 10000
         private const val REPEAT_INITIAL_DELAY_MS = 400L
         private const val REPEAT_INTERVAL_MS = 50L
         private const val ANIM_PASS_DURATION_MS = 700L
