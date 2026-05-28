@@ -19,7 +19,6 @@ import android.inputmethodservice.InputMethodService
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
-import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -40,10 +39,13 @@ class CorrectKeyboardService : InputMethodService() {
     private var shiftState = ShiftState.OFF
     private var shiftButton: Button? = null
     private var correctButton: Button? = null
+    private var undoButton: Button? = null
     private var correctButtonOriginalBackground: Drawable? = null
     private var correctButtonOriginalTint: ColorStateList? = null
     private val letterButtons = mutableListOf<Button>()
     private var correctionInProgress = false
+    private var correctionOriginal: String? = null
+    private var lastOriginalText: String? = null
     private var waveAnimator: ValueAnimator? = null
     private var waveDrawable: WaveBackgroundDrawable? = null
     private var pendingResult: PendingResult? = null
@@ -57,6 +59,9 @@ class CorrectKeyboardService : InputMethodService() {
 
         correctButton = view.findViewById(R.id.btnCorrect)
         correctButton?.setOnClickListener { applyCorrection() }
+        undoButton = view.findViewById(R.id.btnUndo)
+        undoButton?.setOnClickListener { undoCorrection() }
+        updateUndoEnabled()
         view.findViewById<Button>(R.id.btnEmoji).setOnClickListener { toggleEmojiPanel(view) }
         buildEmojiPanel(view.findViewById(R.id.emojiPanel))
 
@@ -271,13 +276,7 @@ class CorrectKeyboardService : InputMethodService() {
     private fun sendEnter() {
         if (correctionInProgress) return
         val ic = currentInputConnection ?: return
-        val action = currentInputEditorInfo?.imeOptions?.and(EditorInfo.IME_MASK_ACTION) ?: 0
-        if (action != EditorInfo.IME_ACTION_NONE && action != EditorInfo.IME_ACTION_UNSPECIFIED) {
-            ic.performEditorAction(action)
-        } else {
-            ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER))
-            ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER))
-        }
+        ic.commitText("\n", 1)
     }
 
     override fun onStartInputView(info: EditorInfo?, restarting: Boolean) {
@@ -286,6 +285,8 @@ class CorrectKeyboardService : InputMethodService() {
             showSymbolsPanel(view, false)
             view.findViewById<View>(R.id.emojiPanel).visibility = View.GONE
         }
+        lastOriginalText = null
+        updateUndoEnabled()
     }
 
     private fun applyNavigationBarInset(root: View) {
@@ -358,6 +359,9 @@ class CorrectKeyboardService : InputMethodService() {
 
         correctionInProgress = true
         pendingResult = null
+        correctionOriginal = original
+        lastOriginalText = null
+        updateUndoEnabled()
         startCorrectionAnimation()
 
         MistralClient.correct(
@@ -379,12 +383,33 @@ class CorrectKeyboardService : InputMethodService() {
         replaceWholeField(result.text)
         correctionInProgress = false
         pendingResult = null
+        if (result.errorMsg == null) {
+            lastOriginalText = correctionOriginal
+        }
+        correctionOriginal = null
+        updateUndoEnabled()
         result.errorMsg?.let { err ->
             Toast.makeText(
                 this,
                 "${getString(R.string.toast_correction_failed)} : $err",
                 Toast.LENGTH_LONG
             ).show()
+        }
+    }
+
+    private fun undoCorrection() {
+        if (correctionInProgress) return
+        val original = lastOriginalText ?: return
+        replaceWholeField(original)
+        lastOriginalText = null
+        updateUndoEnabled()
+    }
+
+    private fun updateUndoEnabled() {
+        val enabled = lastOriginalText != null && !correctionInProgress
+        undoButton?.let {
+            it.isEnabled = enabled
+            it.alpha = if (enabled) 1f else 0.4f
         }
     }
 
