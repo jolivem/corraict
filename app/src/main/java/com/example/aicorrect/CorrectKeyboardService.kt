@@ -1,7 +1,20 @@
 package com.example.aicorrect
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.ValueAnimator
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.res.ColorStateList
+import android.content.res.Configuration
+import android.graphics.Canvas
+import android.graphics.ColorFilter
+import android.graphics.LinearGradient
+import android.graphics.Paint
+import android.graphics.PixelFormat
+import android.graphics.RectF
+import android.graphics.Shader
+import android.graphics.drawable.Drawable
 import android.inputmethodservice.InputMethodService
 import android.os.Build
 import android.os.Handler
@@ -10,16 +23,14 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.LinearInterpolator
 import android.view.inputmethod.EditorInfo
 import android.widget.Button
-import android.graphics.Typeface
-import android.text.SpannableString
-import android.text.Spanned
-import android.text.style.ForegroundColorSpan
-import android.text.style.StyleSpan
 import android.widget.GridLayout
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 
 class CorrectKeyboardService : InputMethodService() {
 
@@ -29,10 +40,12 @@ class CorrectKeyboardService : InputMethodService() {
     private var shiftState = ShiftState.OFF
     private var shiftButton: Button? = null
     private var correctButton: Button? = null
-    private var correctButtonOriginalText: CharSequence? = null
+    private var correctButtonOriginalBackground: Drawable? = null
+    private var correctButtonOriginalTint: ColorStateList? = null
     private val letterButtons = mutableListOf<Button>()
     private var correctionInProgress = false
-    private var animationRunnable: Runnable? = null
+    private var waveAnimator: ValueAnimator? = null
+    private var waveDrawable: WaveBackgroundDrawable? = null
     private var pendingResult: PendingResult? = null
 
     private data class PendingResult(val text: String, val errorMsg: String?)
@@ -40,8 +53,9 @@ class CorrectKeyboardService : InputMethodService() {
     override fun onCreateInputView(): View {
         val view = layoutInflater.inflate(R.layout.keyboard_view, null)
 
+        applyNavigationBarInset(view)
+
         correctButton = view.findViewById(R.id.btnCorrect)
-        correctButtonOriginalText = correctButton?.text
         correctButton?.setOnClickListener { applyCorrection() }
         view.findViewById<Button>(R.id.btnEmoji).setOnClickListener { toggleEmojiPanel(view) }
         buildEmojiPanel(view.findViewById(R.id.emojiPanel))
@@ -269,6 +283,43 @@ class CorrectKeyboardService : InputMethodService() {
         super.onStartInputView(info, restarting)
     }
 
+    private fun applyNavigationBarInset(root: View) {
+        val basePadding = root.paddingBottom
+
+        fun setBottom(extra: Int) {
+            root.setPadding(root.paddingLeft, root.paddingTop, root.paddingRight, basePadding + extra)
+        }
+
+        // Avant que les insets ne soient dispatchés à la vue, on évite la frame
+        // d'attente : en portrait on présume une barre nav, en paysage non.
+        val initial = if (isPortrait()) navigationBarFallbackPx() else 0
+        setBottom(initial)
+
+        ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
+            val navBottom = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
+            v.setPadding(v.paddingLeft, v.paddingTop, v.paddingRight, basePadding + navBottom)
+            insets
+        }
+
+        root.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+            override fun onViewAttachedToWindow(v: View) {
+                ViewCompat.requestApplyInsets(v)
+            }
+            override fun onViewDetachedFromWindow(v: View) {}
+        })
+    }
+
+    private fun isPortrait(): Boolean {
+        return resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+    }
+
+    private fun navigationBarFallbackPx(): Int {
+        val resId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
+        val fromResource = if (resId > 0) resources.getDimensionPixelSize(resId) else 0
+        if (fromResource > 0) return fromResource
+        return (NAV_BAR_FALLBACK_DP * resources.displayMetrics.density).toInt()
+    }
+
     private val mainHandler = Handler(Looper.getMainLooper())
 
     private fun applyCorrection() {
@@ -334,53 +385,43 @@ class CorrectKeyboardService : InputMethodService() {
 
     private fun startCorrectionAnimation() {
         val btn = correctButton ?: return
-        val original = correctButtonOriginalText?.toString() ?: return
-        val n = original.length
-        if (n == 0) return
-        val cycleLength = n + WAVE_LENGTH
-        val ticksPerPass = (ANIM_PASS_DURATION_MS / ANIM_TICK_MS).toInt().coerceAtLeast(1)
-        val charsPerTick = (cycleLength.toDouble() / ticksPerPass).coerceAtLeast(1.0)
-        var headFloat = 0.0
 
-        animationRunnable = object : Runnable {
-            override fun run() {
-                val head = (headFloat.toInt() % cycleLength + cycleLength) % cycleLength
-                btn.text = buildButtonWaveSpannable(head, original)
+        correctButtonOriginalBackground = btn.background
+        correctButtonOriginalTint = btn.backgroundTintList
 
-                val prevPass = (headFloat / cycleLength).toInt()
-                headFloat += charsPerTick
-                val newPass = (headFloat / cycleLength).toInt()
+        val corner = WAVE_CORNER_RADIUS_DP * resources.displayMetrics.density
+        val drawable = WaveBackgroundDrawable(WAVE_BASE_COLOR, WAVE_HIGHLIGHT_COLOR, corner)
+        waveDrawable = drawable
+        btn.backgroundTintList = null
+        btn.background = drawable
 
-                if (newPass > prevPass) {
+        waveAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+            duration = ANIM_PASS_DURATION_MS
+            repeatCount = ValueAnimator.INFINITE
+            interpolator = LinearInterpolator()
+            addUpdateListener { drawable.headFraction = it.animatedValue as Float }
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationRepeat(animation: Animator) {
                     pendingResult?.let { result ->
+                        animation.cancel()
                         finalizeCorrection(result)
-                        return
                     }
                 }
-                mainHandler.postDelayed(this, ANIM_TICK_MS)
-            }
+            })
+            start()
         }
-        mainHandler.post(animationRunnable!!)
     }
 
     private fun stopCorrectionAnimation() {
-        animationRunnable?.let { mainHandler.removeCallbacks(it) }
-        animationRunnable = null
-        correctButtonOriginalText?.let { correctButton?.text = it }
-    }
-
-    private fun buildButtonWaveSpannable(head: Int, text: String): CharSequence {
-        val ss = SpannableString(text)
-        val n = text.length
-        for (i in 0 until n) {
-            val inWave = i <= head && i > head - WAVE_LENGTH
-            val color = if (inWave) COLOR_BRIGHT else COLOR_DIM
-            ss.setSpan(ForegroundColorSpan(color), i, i + 1, Spanned.SPAN_INCLUSIVE_EXCLUSIVE)
-            if (inWave) {
-                ss.setSpan(StyleSpan(Typeface.BOLD), i, i + 1, Spanned.SPAN_INCLUSIVE_EXCLUSIVE)
-            }
+        waveAnimator?.cancel()
+        waveAnimator = null
+        waveDrawable = null
+        correctButton?.let { btn ->
+            btn.background = correctButtonOriginalBackground
+            btn.backgroundTintList = correctButtonOriginalTint
         }
-        return ss
+        correctButtonOriginalBackground = null
+        correctButtonOriginalTint = null
     }
 
     private fun replaceWholeField(newText: String) {
@@ -429,15 +470,70 @@ class CorrectKeyboardService : InputMethodService() {
         private const val MAX_CHARS = 10000
         private const val REPEAT_INITIAL_DELAY_MS = 400L
         private const val REPEAT_INTERVAL_MS = 50L
-        private const val ANIM_TICK_MS = 70L
         private const val ANIM_PASS_DURATION_MS = 700L
-        private const val WAVE_LENGTH = 3
-        private const val COLOR_BRIGHT = 0xFFFFFFFF.toInt()
-        private const val COLOR_DIM = 0x55FFFFFF.toInt()
+        private const val NAV_BAR_FALLBACK_DP = 48f
+        private const val WAVE_CORNER_RADIUS_DP = 4f
+        private const val WAVE_BASE_COLOR = 0xFF33B5E5.toInt()       // holo_blue_light (tint XML)
+        private const val WAVE_HIGHLIGHT_COLOR = 0xFFFFFFFF.toInt()  // blanc lumineux
         private val EMOJIS = listOf(
             "😀", "😂", "🤣", "😊", "😍", "🥰", "😘", "😎",
             "🤔", "😏", "😅", "😭", "😢", "😡", "🤯", "🙄",
             "😴", "🤗", "👍", "👎", "❤️", "🔥", "🎉", "✨",
         )
+    }
+}
+
+private class WaveBackgroundDrawable(
+    private val baseColor: Int,
+    private val highlightColor: Int,
+    private val cornerRadiusPx: Float,
+) : Drawable() {
+
+    var headFraction: Float = 0f
+        set(value) {
+            if (field != value) {
+                field = value
+                invalidateSelf()
+            }
+        }
+
+    private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val rectF = RectF()
+
+    override fun draw(canvas: Canvas) {
+        val b = bounds
+        val w = b.width().toFloat()
+        val h = b.height().toFloat()
+        if (w <= 0f || h <= 0f) return
+
+        val waveWidth = w * WAVE_WIDTH_FRACTION
+        val center = -waveWidth / 2f + headFraction * (w + waveWidth)
+        val start = center - waveWidth / 2f
+        val end = center + waveWidth / 2f
+
+        paint.shader = LinearGradient(
+            start, 0f, end, 0f,
+            intArrayOf(baseColor, highlightColor, baseColor),
+            floatArrayOf(0f, 0.5f, 1f),
+            Shader.TileMode.CLAMP,
+        )
+
+        rectF.set(0f, 0f, w, h)
+        canvas.drawRoundRect(rectF, cornerRadiusPx, cornerRadiusPx, paint)
+    }
+
+    override fun setAlpha(alpha: Int) {
+        paint.alpha = alpha
+    }
+
+    override fun setColorFilter(colorFilter: ColorFilter?) {
+        paint.colorFilter = colorFilter
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun getOpacity(): Int = PixelFormat.TRANSLUCENT
+
+    companion object {
+        private const val WAVE_WIDTH_FRACTION = 0.35f
     }
 }

@@ -1,0 +1,49 @@
+# Caddyfile — VPS dédié AiCorrect.
+#
+# Caddy gère automatiquement les certificats Let's Encrypt si :
+#   - les enregistrements DNS A/AAAA de aicorrect.app, api.aicorrect.app,
+#     et www.aicorrect.app pointent sur l'IP publique du VPS
+#   - les ports 80 et 443 (TCP + UDP) sont ouverts (firewall, security group)
+#
+# Les noms `aicorrect-backend` et `aicorrect-web` sont les container_name
+# définis dans docker-compose.yml. Caddy les résout via le network Docker
+# partagé `caddy_network`.
+
+{
+	# Adresse de contact Let's Encrypt — remplace par la tienne.
+	email contact@aicorrect.app
+}
+
+# ---------------------------------------------------------------------------
+# API backend (NestJS)
+# ---------------------------------------------------------------------------
+api.aicorrect.app {
+	encode zstd gzip
+
+	# Stripe webhook (/v1/billing/webhook) reçoit du raw body : reverse_proxy
+	# de Caddy passe les bytes tels quels, rien à configurer de spécial.
+	reverse_proxy aicorrect-backend:3000
+
+	log {
+		output stdout
+		format console
+	}
+}
+
+# ---------------------------------------------------------------------------
+# Site web (Next.js standalone)
+# ---------------------------------------------------------------------------
+aicorrect.app {
+	encode zstd gzip
+	reverse_proxy aicorrect-web:3001
+
+	log {
+		output stdout
+		format console
+	}
+}
+
+# Redirige www vers apex (optionnel mais propre pour les certificats)
+www.aicorrect.app {
+	redir https://aicorrect.app{uri} permanent
+}

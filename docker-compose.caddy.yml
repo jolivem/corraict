@@ -1,0 +1,36 @@
+# Reverse-proxy Caddy pour le VPS dédié AiCorrect.
+# Conserve la même convention qu'avant : Caddy dans son propre compose,
+# rejoint le network externe `caddy_network` que backend/web utilisent aussi.
+#
+# Setup initial sur le VPS (une seule fois) :
+#   docker network create caddy_network
+#
+# Lancement :
+#   docker compose -f docker-compose.caddy.yml up -d
+#
+# Recharge à chaud du Caddyfile sans redémarrer le container :
+#   docker exec aicorrect-caddy caddy reload --config /etc/caddy/Caddyfile
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: aicorrect-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"   # HTTP/3 (QUIC)
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data       # certificats Let's Encrypt — à sauvegarder
+      - caddy_config:/config
+    networks:
+      - caddy_network
+
+networks:
+  caddy_network:
+    external: true
+
+volumes:
+  caddy_data:
+  caddy_config:
