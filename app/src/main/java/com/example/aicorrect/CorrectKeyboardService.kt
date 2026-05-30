@@ -34,6 +34,7 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.emoji2.bundled.BundledEmojiCompatConfig
 import androidx.emoji2.text.EmojiCompat
 
 class CorrectKeyboardService : InputMethodService() {
@@ -63,6 +64,15 @@ class CorrectKeyboardService : InputMethodService() {
     private var pendingResult: PendingResult? = null
 
     private data class PendingResult(val text: String, val errorMsg: String?)
+
+    override fun onCreate() {
+        super.onCreate()
+        try {
+            EmojiCompat.init(BundledEmojiCompatConfig(this))
+        } catch (_: Throwable) {
+            // already initialized (e.g. by androidx.startup) — keep existing instance
+        }
+    }
 
     override fun onCreateInputView(): View {
         lastUiMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
