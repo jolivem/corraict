@@ -31,6 +31,7 @@ import android.widget.CheckBox
 import android.widget.GridLayout
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
@@ -48,6 +49,7 @@ class CorrectKeyboardService : InputMethodService() {
     private val letterButtons = mutableListOf<Button>()
     private val emojiTabButtons = mutableListOf<Button>()
     private var currentEmojiCategory = 0
+    private var lastUiMode = Configuration.UI_MODE_NIGHT_UNDEFINED
     private var correctionInProgress = false
     private var correctionOriginal: String? = null
     private var correctionWasSelection = false
@@ -61,6 +63,7 @@ class CorrectKeyboardService : InputMethodService() {
     private data class PendingResult(val text: String, val errorMsg: String?)
 
     override fun onCreateInputView(): View {
+        lastUiMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
         val view = layoutInflater.inflate(R.layout.keyboard_view, null)
 
         applyNavigationBarInset(view)
@@ -199,7 +202,7 @@ class CorrectKeyboardService : InputMethodService() {
                 text = category.icon
                 textSize = 18f
                 isAllCaps = false
-                setTextColor(0xFFFFFFFF.toInt())
+                setTextColor(ContextCompat.getColor(this@CorrectKeyboardService, R.color.key_text))
                 minWidth = 0
                 minimumWidth = 0
                 setPadding(28, 12, 28, 12)
@@ -217,17 +220,21 @@ class CorrectKeyboardService : InputMethodService() {
 
     private fun showEmojiCategory(grid: GridLayout, index: Int) {
         currentEmojiCategory = index
+        val activeColor = ContextCompat.getColor(this, R.color.key_accent_active)
+        val inactiveColor = ContextCompat.getColor(this, R.color.key_surface_wide)
         for ((i, btn) in emojiTabButtons.withIndex()) {
-            btn.setBackgroundColor(if (i == index) 0xFF1976D2.toInt() else 0xFF1A1A1A.toInt())
+            btn.setBackgroundColor(if (i == index) activeColor else inactiveColor)
         }
         grid.removeAllViews()
+        val surface = ContextCompat.getColor(this, R.color.key_surface)
+        val textColor = ContextCompat.getColor(this, R.color.key_text)
         for (emoji in EMOJI_CATEGORIES[index].emojis) {
             val btn = Button(this).apply {
                 text = emoji
                 textSize = 20f
                 isAllCaps = false
-                setBackgroundColor(0xFF2A2A2A.toInt())
-                setTextColor(0xFFFFFFFF.toInt())
+                setBackgroundColor(surface)
+                setTextColor(textColor)
                 minWidth = 0
                 minimumWidth = 0
                 setPadding(0, 0, 0, 0)
@@ -280,15 +287,18 @@ class CorrectKeyboardService : InputMethodService() {
         when (shiftState) {
             ShiftState.OFF -> {
                 btn.text = "⇧"
-                btn.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF1A1A1A.toInt())
+                btn.backgroundTintList = ColorStateList.valueOf(
+                    ContextCompat.getColor(this, R.color.key_surface_wide))
             }
             ShiftState.ONE_SHOT -> {
                 btn.text = "⇧"
-                btn.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF1976D2.toInt())
+                btn.backgroundTintList = ColorStateList.valueOf(
+                    ContextCompat.getColor(this, R.color.key_accent_active))
             }
             ShiftState.LOCKED -> {
                 btn.text = "⇪"
-                btn.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFFF57C00.toInt())
+                btn.backgroundTintList = ColorStateList.valueOf(
+                    ContextCompat.getColor(this, R.color.key_accent_locked))
             }
         }
     }
@@ -318,6 +328,15 @@ class CorrectKeyboardService : InputMethodService() {
         if (correctionInProgress) return
         val ic = currentInputConnection ?: return
         ic.commitText("\n", 1)
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        val newNight = newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        if (newNight != lastUiMode && inputView != null) {
+            lastUiMode = newNight
+            setInputView(onCreateInputView())
+        }
     }
 
     override fun onStartInputView(info: EditorInfo?, restarting: Boolean) {
@@ -538,7 +557,11 @@ class CorrectKeyboardService : InputMethodService() {
         correctButtonOriginalTint = btn.backgroundTintList
 
         val corner = WAVE_CORNER_RADIUS_DP * resources.displayMetrics.density
-        val drawable = WaveBackgroundDrawable(WAVE_BASE_COLOR, WAVE_HIGHLIGHT_COLOR, corner)
+        val drawable = WaveBackgroundDrawable(
+            ContextCompat.getColor(this, R.color.wave_base),
+            ContextCompat.getColor(this, R.color.wave_highlight),
+            corner,
+        )
         waveDrawable = drawable
         btn.backgroundTintList = null
         btn.background = drawable
@@ -625,8 +648,6 @@ class CorrectKeyboardService : InputMethodService() {
         private const val ANIM_PASS_DURATION_MS = 700L
         private const val NAV_BAR_FALLBACK_DP = 48f
         private const val WAVE_CORNER_RADIUS_DP = 3f
-        private const val WAVE_BASE_COLOR = 0xFF33B5E5.toInt()       // holo_blue_light (tint XML)
-        private const val WAVE_HIGHLIGHT_COLOR = 0xFFFFFFFF.toInt()  // blanc lumineux
         private data class EmojiCategory(val icon: String, val emojis: List<String>)
 
         private val EMOJI_CATEGORIES = listOf(

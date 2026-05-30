@@ -8,9 +8,16 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <color name="key_surface">#FF2A2A2A</color>
-    <color name="key_surface_wide">#FF1A1A1A</color>
-    <color name="key_ripple">#40FFFFFF</color>
-    <color name="accent_correct">#FF1E88E5</color>
+    <!-- Keyboard palette (light) -->
+    <color name="keyboard_background">#FFE1E5EA</color>
+    <color name="key_surface">#FFFFFFFF</color>
+    <color name="key_surface_wide">#FFB0BAC1</color>
+    <color name="key_text">#FF202124</color>
+    <color name="key_ripple">#33000000</color>
+    <color name="key_accent_active">#FF1976D2</color>
+    <color name="key_accent_locked">#FFF57C00</color>
+    <color name="accent_correct">#FF1976D2</color>
     <color name="accent_emoji">#FFEF6C00</color>
+    <color name="wave_base">#FF33B5E5</color>
+    <color name="wave_highlight">#FFFFFFFF</color>
 </resources>
