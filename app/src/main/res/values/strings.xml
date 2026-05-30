@@ -29,4 +29,8 @@
     <string name="toast_test_no_key">Saisis d\'abord une clé API</string>
     <string name="toast_test_success">Connexion OK ✓</string>
     <string name="toast_test_failed">Échec : %1$s</string>
+    <string name="warn_long_text_message">Vous pouvez sélectionner le texte à corriger</string>
+    <string name="warn_dont_show_again">Ne plus afficher</string>
+    <string name="dialog_continue">Continuer</string>
+    <string name="dialog_cancel">Annuler</string>
 </resources>

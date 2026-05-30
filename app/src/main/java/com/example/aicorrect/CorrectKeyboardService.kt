@@ -3,6 +3,7 @@ package com.example.aicorrect
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
+import android.app.AlertDialog
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.res.ColorStateList
@@ -22,9 +23,11 @@ import android.os.Looper
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.view.animation.LinearInterpolator
 import android.view.inputmethod.EditorInfo
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.GridLayout
 import android.widget.LinearLayout
 import android.widget.Toast
@@ -404,6 +407,15 @@ class CorrectKeyboardService : InputMethodService() {
             return
         }
 
+        if (!correctionWasSelection && shouldShowLongTextWarning(original)) {
+            showLongTextWarning { launchCorrection(original, apiKey, model, language) }
+            return
+        }
+
+        launchCorrection(original, apiKey, model, language)
+    }
+
+    private fun launchCorrection(original: String, apiKey: String, model: String, language: String) {
         correctionInProgress = true
         pendingResult = null
         correctionOriginal = original
@@ -423,6 +435,51 @@ class CorrectKeyboardService : InputMethodService() {
                 mainHandler.post { pendingResult = PendingResult(original, err) }
             },
         )
+    }
+
+    private fun shouldShowLongTextWarning(text: String): Boolean {
+        if (getPreferences().getBoolean(KEY_HIDE_LONG_TEXT_WARNING, false)) return false
+        if (text.length < LONG_TEXT_THRESHOLD) return false
+        return hasReplyHistory(text)
+    }
+
+    private fun hasReplyHistory(text: String): Boolean {
+        if (text.lineSequence().any { it.trimStart().startsWith(">") }) return true
+        val markers = listOf(
+            "-----Original Message-----",
+            "-----Message d'origine-----",
+            "________________________________",
+        )
+        if (markers.any { text.contains(it) }) return true
+        if (REPLY_HEADER_EN.containsMatchIn(text)) return true
+        if (REPLY_HEADER_FR.containsMatchIn(text)) return true
+        return false
+    }
+
+    private fun showLongTextWarning(onContinue: () -> Unit) {
+        val token = inputView?.windowToken ?: run { onContinue(); return }
+        val content = layoutInflater.inflate(R.layout.dialog_long_text_warning, null)
+        val checkbox = content.findViewById<CheckBox>(R.id.cbDontShowAgain)
+        val dialog = AlertDialog.Builder(this)
+            .setView(content)
+            .setPositiveButton(R.string.dialog_continue) { _, _ ->
+                if (checkbox.isChecked) {
+                    getPreferences().edit().putBoolean(KEY_HIDE_LONG_TEXT_WARNING, true).apply()
+                }
+                onContinue()
+            }
+            .setNegativeButton(R.string.dialog_cancel) { _, _ ->
+                if (checkbox.isChecked) {
+                    getPreferences().edit().putBoolean(KEY_HIDE_LONG_TEXT_WARNING, true).apply()
+                }
+            }
+            .create()
+        val window = dialog.window ?: return
+        val lp = window.attributes
+        lp.token = token
+        lp.type = WindowManager.LayoutParams.TYPE_APPLICATION_ATTACHED_DIALOG
+        window.attributes = lp
+        dialog.show()
     }
 
     private fun finalizeCorrection(result: PendingResult) {
@@ -556,6 +613,10 @@ class CorrectKeyboardService : InputMethodService() {
         private const val KEY_LANGUAGE = "language"
         private const val KEY_API_KEY = "api_key"
         private const val KEY_MODEL = "model"
+        private const val KEY_HIDE_LONG_TEXT_WARNING = "hide_long_text_warning"
+        private const val LONG_TEXT_THRESHOLD = 500
+        private val REPLY_HEADER_EN = Regex("(?im)^On .+ wrote:\\s*$")
+        private val REPLY_HEADER_FR = Regex("(?im)^Le .+ a écrit\\s*:\\s*$")
         private const val DEFAULT_LANGUAGE = "fr"
         private const val DEFAULT_MODEL = "mistral-small-latest"
         private const val MAX_CHARS = 10000
