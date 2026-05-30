@@ -532,8 +532,14 @@ class CorrectKeyboardService : InputMethodService() {
             "________________________________",
         )
         if (markers.any { text.contains(it) }) return true
-        if (REPLY_HEADER_EN.containsMatchIn(text)) return true
-        if (REPLY_HEADER_FR.containsMatchIn(text)) return true
+        for (line in text.lineSequence()) {
+            val trimmed = line.trim()
+            if (trimmed.startsWith("On ", ignoreCase = true) &&
+                trimmed.endsWith("wrote:", ignoreCase = true)) return true
+            if (trimmed.startsWith("Le ", ignoreCase = true) &&
+                (trimmed.endsWith("a écrit :", ignoreCase = true) ||
+                 trimmed.endsWith("a écrit:", ignoreCase = true))) return true
+        }
         return false
     }
 
@@ -705,8 +711,6 @@ class CorrectKeyboardService : InputMethodService() {
         private val LAYOUT_AZERTY = KeyboardLayout("azertyuiop", "qsdfghjklm", "wxcvbn'")
         private val LAYOUT_QWERTY = KeyboardLayout("qwertyuiop", "asdfghjkl", "zxcvbnm")
         private val LAYOUT_QWERTZ = KeyboardLayout("qwertzuiop", "asdfghjkl", "yxcvbnm")
-        private val REPLY_HEADER_EN = Regex("(?im)^On .+ wrote:\\s*$")
-        private val REPLY_HEADER_FR = Regex("(?im)^Le .+ a écrit\\s*:\\s*$")
         private const val DEFAULT_LANGUAGE = "fr"
         private const val DEFAULT_MODEL = "mistral-small-latest"
         private const val MAX_CHARS = 10000

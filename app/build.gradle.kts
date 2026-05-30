@@ -43,7 +43,7 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.tink.android)
-    implementation(libs.androidx.emoji2)
+    implementation(libs.androidx.emoji2.core)
     implementation(libs.androidx.emoji2.bundled)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
