@@ -1,10 +1,9 @@
 # Production stack — déployé sur le VPS Hetzner.
 # Pour le dev local (juste les services d'infra), utiliser docker-compose.dev.yml.
 #
-# Le reverse proxy Caddy vit dans le repo clairimmo (déployé sur le même VPS).
-# Les containers backend/web s'attachent au network externe `caddy_network`
-# auquel le caddy de clairimmo est aussi connecté → routing transparent.
-# À créer une seule fois sur le VPS : `docker network create caddy_network`.
+# Caddy fait la terminaison TLS (ports 80/443) et reverse-proxy les requêtes
+# vers backend et web via le réseau interne `default`. Aucun port backend/web
+# n'est exposé directement.
 
 services:
   mariadb:
@@ -23,7 +22,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    # Pas de ports exposés en prod — accès uniquement via le network Docker.
+    # Pas de ports exposés — accès uniquement via le network Docker.
 
   backend:
     image: ghcr.io/jolivem/aicorrect-backend:${BACKEND_IMAGE_TAG:-latest}
@@ -54,9 +53,6 @@ services:
     depends_on:
       mariadb:
         condition: service_healthy
-    networks:
-      - default
-      - caddy_network
 
   web:
     image: ghcr.io/jolivem/aicorrect-web:${WEB_IMAGE_TAG:-latest}
@@ -73,14 +69,24 @@ services:
       SESSION_COOKIE_NAME: ${SESSION_COOKIE_NAME:-aicorrect_session}
     depends_on:
       - backend
-    networks:
-      - default
-      - caddy_network
 
-networks:
-  default:
-  caddy_network:
-    external: true
+  caddy:
+    image: caddy:2-alpine
+    container_name: aicorrect-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"   # HTTP/3 (QUIC)
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data       # certificats Let's Encrypt — à sauvegarder
+      - caddy_config:/config
+    depends_on:
+      - backend
+      - web
 
 volumes:
   mariadb_data:
+  caddy_data:
+  caddy_config:
