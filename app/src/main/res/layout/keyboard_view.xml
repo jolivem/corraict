@@ -188,16 +188,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
-            <Button style="@style/Key" android:text="!" />
             <Button style="@style/Key" android:text="@" />
             <Button style="@style/Key" android:text="#" />
             <Button style="@style/Key" android:text="$" />
             <Button style="@style/Key" android:text="%" />
             <Button style="@style/Key" android:text="&amp;" />
-            <Button style="@style/Key" android:text="*" />
+            <Button style="@style/Key" android:text="-" />
+            <Button style="@style/Key" android:text="+" />
             <Button style="@style/Key" android:text="(" />
             <Button style="@style/Key" android:text=")" />
-            <Button style="@style/Key" android:text="_" />
+            <Button style="@style/Key" android:text="/" />
         </LinearLayout>
 
         <LinearLayout
@@ -205,16 +205,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
-            <Button style="@style/Key" android:text="-" />
-            <Button style="@style/Key" android:text="+" />
-            <Button style="@style/Key" android:text="=" />
-            <Button style="@style/Key" android:text="/" />
+            <Button style="@style/Key" android:text="*" />
+            <Button style="@style/Key" android:text="&quot;" />
             <Button style="@style/Key" android:text=":" />
             <Button style="@style/Key" android:text=";" />
-            <Button style="@style/Key" android:text="&quot;" />
-            <Button style="@style/Key" android:text="€" />
-            <Button style="@style/Key" android:text="£" />
+            <Button style="@style/Key" android:text="!" />
+            <Button style="@style/Key" android:text="&#63;" />
             <Button style="@style/Key" android:text="~" />
+            <Button style="@style/Key" android:text="|" />
+            <Button style="@style/Key" android:text="=" />
+            <Button style="@style/Key" android:text="_" />
         </LinearLayout>
 
         <LinearLayout
@@ -222,15 +222,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
-            <Button style="@style/Key" android:text="&lt;" />
-            <Button style="@style/Key" android:text="&gt;" />
-            <Button style="@style/Key" android:text="[" />
-            <Button style="@style/Key" android:text="]" />
+            <Button style="@style/Key" android:text="€" />
+            <Button style="@style/Key" android:text="£" />
             <Button style="@style/Key" android:text="{" />
             <Button style="@style/Key" android:text="}" />
-            <Button style="@style/Key" android:text="|" />
+            <Button style="@style/Key" android:text="[" />
+            <Button style="@style/Key" android:text="]" />
+            <Button style="@style/Key" android:text="&lt;" />
+            <Button style="@style/Key" android:text="&gt;" />
             <Button style="@style/Key" android:text="\\" />
-            <Button style="@style/Key" android:text="&#63;" />
             <Button android:id="@+id/keyDeleteSym" style="@style/KeyWide" android:text="⌫" />
         </LinearLayout>
 
