@@ -43,6 +43,8 @@ class CorrectKeyboardService : InputMethodService() {
     private var correctButtonOriginalBackground: Drawable? = null
     private var correctButtonOriginalTint: ColorStateList? = null
     private val letterButtons = mutableListOf<Button>()
+    private val emojiTabButtons = mutableListOf<Button>()
+    private var currentEmojiCategory = 0
     private var correctionInProgress = false
     private var correctionOriginal: String? = null
     private var correctionWasSelection = false
@@ -66,7 +68,7 @@ class CorrectKeyboardService : InputMethodService() {
         undoButton?.setOnClickListener { undoCorrection() }
         updateUndoEnabled()
         view.findViewById<Button>(R.id.btnEmoji).setOnClickListener { toggleEmojiPanel(view) }
-        buildEmojiPanel(view.findViewById(R.id.emojiPanel))
+        buildEmojiPanel(view)
 
         bindLetterRow(view.findViewById(R.id.rowDigits))
         bindLetterRow(view.findViewById(R.id.row1))
@@ -177,16 +179,49 @@ class CorrectKeyboardService : InputMethodService() {
 
     private fun toggleEmojiPanel(root: View) {
         if (correctionInProgress) return
-        val panel = root.findViewById<GridLayout>(R.id.emojiPanel)
-        panel.visibility = if (panel.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+        val panel = root.findViewById<View>(R.id.emojiPanel)
+        val area = root.findViewById<View>(R.id.keyboardArea)
+        val opening = panel.visibility != View.VISIBLE
+        panel.visibility = if (opening) View.VISIBLE else View.GONE
+        area.visibility = if (opening) View.GONE else View.VISIBLE
     }
 
-    private fun buildEmojiPanel(panel: GridLayout) {
-        panel.removeAllViews()
-        for (emoji in EMOJIS) {
+    private fun buildEmojiPanel(root: View) {
+        val tabs = root.findViewById<LinearLayout>(R.id.emojiTabs)
+        val grid = root.findViewById<GridLayout>(R.id.emojiGrid)
+        tabs.removeAllViews()
+        emojiTabButtons.clear()
+        for ((index, category) in EMOJI_CATEGORIES.withIndex()) {
+            val tabBtn = Button(this).apply {
+                text = category.icon
+                textSize = 18f
+                isAllCaps = false
+                setTextColor(0xFFFFFFFF.toInt())
+                minWidth = 0
+                minimumWidth = 0
+                setPadding(28, 12, 28, 12)
+                setOnClickListener { showEmojiCategory(grid, index) }
+            }
+            val params = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+            ).apply { setMargins(1, 2, 1, 2) }
+            tabs.addView(tabBtn, params)
+            emojiTabButtons.add(tabBtn)
+        }
+        showEmojiCategory(grid, 0)
+    }
+
+    private fun showEmojiCategory(grid: GridLayout, index: Int) {
+        currentEmojiCategory = index
+        for ((i, btn) in emojiTabButtons.withIndex()) {
+            btn.setBackgroundColor(if (i == index) 0xFF1976D2.toInt() else 0xFF1A1A1A.toInt())
+        }
+        grid.removeAllViews()
+        for (emoji in EMOJI_CATEGORIES[index].emojis) {
             val btn = Button(this).apply {
                 text = emoji
-                textSize = 18f
+                textSize = 20f
                 isAllCaps = false
                 setBackgroundColor(0xFF2A2A2A.toInt())
                 setTextColor(0xFFFFFFFF.toInt())
@@ -201,7 +236,7 @@ class CorrectKeyboardService : InputMethodService() {
                 columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1, GridLayout.FILL, 1f)
                 setMargins(2, 2, 2, 2)
             }
-            panel.addView(btn, params)
+            grid.addView(btn, params)
         }
     }
 
@@ -287,6 +322,7 @@ class CorrectKeyboardService : InputMethodService() {
         inputView?.let { view ->
             showSymbolsPanel(view, false)
             view.findViewById<View>(R.id.emojiPanel).visibility = View.GONE
+            view.findViewById<View>(R.id.keyboardArea).visibility = View.VISIBLE
         }
         lastOriginalText = null
         updateUndoEnabled()
@@ -530,10 +566,88 @@ class CorrectKeyboardService : InputMethodService() {
         private const val WAVE_CORNER_RADIUS_DP = 3f
         private const val WAVE_BASE_COLOR = 0xFF33B5E5.toInt()       // holo_blue_light (tint XML)
         private const val WAVE_HIGHLIGHT_COLOR = 0xFFFFFFFF.toInt()  // blanc lumineux
-        private val EMOJIS = listOf(
-            "😀", "😂", "🤣", "😊", "😍", "🥰", "😘", "😎",
-            "🤔", "😏", "😅", "😭", "😢", "😡", "🤯", "🙄",
-            "😴", "🤗", "👍", "👎", "❤️", "🔥", "🎉", "✨",
+        private data class EmojiCategory(val icon: String, val emojis: List<String>)
+
+        private val EMOJI_CATEGORIES = listOf(
+            EmojiCategory("😀", listOf(
+                "😀","😃","😄","😁","😆","😅","🤣","😂","🙂","🙃",
+                "😉","😊","😇","🥰","😍","🤩","😘","😋","😜","🤪",
+                "😎","🤔","🤨","😏","😒","🙄","😬","😮","😯","😲",
+                "🥺","😢","😭","😤","😠","😡","🤬","🤯","😳","🥵",
+                "🥶","😱","😨","😰","😥","😓","🤗","🤭","😶","🤐",
+                "😔","😪","😴","🤤","🤒","🤕","🤧","🥴","😷","🤠",
+            )),
+            EmojiCategory("👍", listOf(
+                "👍","👎","👌","✌️","🤞","🤘","🤙","👈","👉","👆",
+                "👇","☝️","👋","🤚","✋","🖖","👏","🙌","🙏","🤝",
+                "🤲","✊","👊","💪","👀","👁️","👃","👄","👅","🧠",
+                "👶","👦","👧","👨","👩","🧑","👴","👵","💃","🕺",
+                "🤷","🤦","🙋","🙇","🚶","🏃","🧎","🧍",
+            )),
+            EmojiCategory("❤️", listOf(
+                "❤️","🧡","💛","💚","💙","💜","🤎","🖤","🤍","💕",
+                "💞","💓","💗","💖","💘","💝","💟","♥️","💔","❣️",
+                "💌","💋","💯","💢","💥","💫","💦","💨","💭","💤",
+                "🌹","🌷","🌸","💐","🌺","🌻","🌼","🌿","🍀","🍃",
+            )),
+            EmojiCategory("🐶", listOf(
+                "🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯",
+                "🦁","🐮","🐷","🐸","🐵","🐔","🐧","🐦","🐤","🦆",
+                "🦅","🦉","🐺","🐗","🐴","🦄","🐝","🐛","🦋","🐌",
+                "🐞","🐢","🐍","🐙","🐠","🐟","🐬","🦈","🐳","🐊",
+                "🦒","🐘","🐪","🐫","🐃","🐎","🐖","🐑","🐐","🦌",
+                "🐕","🐈","🐓","🦃","🕊️","🐇","🌳","🌲","🌴","🌵",
+            )),
+            EmojiCategory("🍕", listOf(
+                "🍏","🍎","🍐","🍊","🍋","🍌","🍉","🍇","🍓","🍈",
+                "🍒","🍑","🥭","🍍","🥥","🥝","🍅","🥑","🥦","🥬",
+                "🥒","🌶️","🌽","🥕","🧅","🥔","🥐","🍞","🥖","🧀",
+                "🥚","🍳","🥞","🥓","🍗","🍖","🌭","🍔","🍟","🍕",
+                "🥪","🌮","🌯","🥗","🍝","🍜","🍲","🍛","🍣","🍱",
+                "🥟","🍙","🍚","🍦","🍰","🎂","🍩","🍪","🍫","🍿",
+                "🍯","🥛","☕","🍵","🥤","🍺","🍻","🥂","🍷","🍸",
+            )),
+            EmojiCategory("⚽", listOf(
+                "⚽","🏀","🏈","⚾","🥎","🎾","🏐","🏉","🎱","🏓",
+                "🏸","🥊","⛳","🏹","🎣","🥋","⛸️","🎿","🏂","🏋️",
+                "🤼","🤸","⛹️","🏌️","🏇","🧘","🏄","🏊","🚴","🚵",
+                "🏆","🥇","🥈","🥉","🏅","🎖️","🎯","🎳","🎮","🎰",
+                "🧩","♟️","🎲","🎭","🎨","🎬","🎤","🎧","🎼","🎵",
+                "🎶","🎸","🎹","🎺","🎻","🥁","🚗","🚕","🚌","🚓",
+                "🚑","🚒","🚜","🏍️","🚲","🛵","✈️","🚀","🛸","🚁",
+                "⛵","🚤","🚢","🏠","🏡","🏢","🏥","🏫","🏰","🗼",
+                "⛪","⛩️","🌉","🗽","⛲","🏖️","🏝️","🌋","⛰️","🗻",
+                "🏕️","⛺","🌍","🌎","🌏","🗺️",
+            )),
+            EmojiCategory("💡", listOf(
+                "⌚","📱","💻","⌨️","🖥️","🖨️","🖱️","💽","💾","💿",
+                "📷","📸","📹","🎥","📞","☎️","📟","📠","📺","📻",
+                "🎙️","⏰","⏱️","⏲️","⌛","⏳","📡","🔋","🔌","💡",
+                "🔦","🕯️","🪔","💸","💵","💰","💳","💎","⚖️","🔧",
+                "🔨","🛠️","⛏️","🔩","⚙️","🔫","💣","🪓","🔪","🗡️",
+                "⚔️","🛡️","🚬","⚰️","🏺","🔮","📿","🧿","💈","🔭",
+                "🔬","🌡️","💊","💉","🩸","🧬","🧪","🚽","🚿","🛁",
+                "🧼","🧽","🛏️","🛋️","🪑","🚪","🛒","🎁","🎀","🎊",
+                "🎉","🎈","🔑","🗝️","🖼️","✂️","📌","📍","📎","✏️",
+                "🖊️","🖋️","📚","📖","📕","📗","📘","📙","📓","📒",
+                "📔","📰","📅","📆","📇","🗂️","📁","📂","📊","📈",
+                "📉","📋","🔖","💼","📧","✉️","📨","📩","📤","📥",
+                "📦","📭","📮",
+            )),
+            EmojiCategory("✅", listOf(
+                "✅","☑️","✔️","❌","❎","⭕","🚫","⛔","📛","❗",
+                "❕","❓","❔","‼️","⁉️","💯","💢","♻️","🌀","💲",
+                "®️","©️","™️","➕","➖","✖️","➗","♾️","↗️","↘️",
+                "↙️","↖️","⬆️","⬇️","⬅️","➡️","↔️","↕️","🔃","🔄",
+                "🔝","🔜","🔙","🔛","🔚","🔀","🔁","🔂","▶️","⏩",
+                "◀️","⏪","⏸️","⏹️","🔆","🔅","📶","🔔","🔕","🔘",
+                "🟢","🟡","🟠","🔴","🟣","🔵","⚫","⚪","🟤","🟥",
+                "🟧","🟨","🟩","🟦","🟪","🟫","⬛","⬜","🔺","🔻",
+                "🔸","🔹","🔶","🔷","🔳","🔲","☀️","🌤️","⛅","🌥️",
+                "☁️","🌧️","⛈️","🌩️","🌨️","❄️","☃️","⛄","🌬️","🌪️",
+                "🌫️","🌈","☔","💧","🌊","🔥","✨","⭐","🌟","💫",
+                "☄️","🌙","☀️",
+            )),
         )
     }
 }

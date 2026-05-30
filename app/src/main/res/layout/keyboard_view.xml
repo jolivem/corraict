@@ -54,13 +54,44 @@
             android:layout_margin="2dp" />
     </LinearLayout>
 
-    <GridLayout
+    <LinearLayout
         android:id="@+id/emojiPanel"
         android:layout_width="match_parent"
+        android:layout_height="240dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/emojiTabs"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <GridLayout
+                android:id="@+id/emojiGrid"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:columnCount="8"
+                android:padding="2dp" />
+        </ScrollView>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/keyboardArea"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:columnCount="8"
-        android:visibility="gone"
-        android:padding="2dp" />
+        android:orientation="vertical">
 
     <!-- ============== Letters panel ============== -->
     <LinearLayout
@@ -254,6 +285,8 @@
             <Button android:id="@+id/keyPeriodSym" style="@style/Key" android:text="." />
             <Button android:id="@+id/keyEnterSym" style="@style/KeyWide" android:text="⏎" android:textSize="24sp" />
         </LinearLayout>
+    </LinearLayout>
+
     </LinearLayout>
 
 </LinearLayout>
