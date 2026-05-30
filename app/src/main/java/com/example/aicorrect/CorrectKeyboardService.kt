@@ -50,6 +50,7 @@ class CorrectKeyboardService : InputMethodService() {
     private val emojiTabButtons = mutableListOf<Button>()
     private var currentEmojiCategory = 0
     private var lastUiMode = Configuration.UI_MODE_NIGHT_UNDEFINED
+    private var lastLanguage: String = ""
     private var correctionInProgress = false
     private var correctionOriginal: String? = null
     private var correctionWasSelection = false
@@ -64,6 +65,8 @@ class CorrectKeyboardService : InputMethodService() {
 
     override fun onCreateInputView(): View {
         lastUiMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        lastLanguage = systemLanguage()
+        letterButtons.clear()
         val view = layoutInflater.inflate(R.layout.keyboard_view, null)
 
         applyNavigationBarInset(view)
@@ -82,6 +85,7 @@ class CorrectKeyboardService : InputMethodService() {
         bindRow3(view.findViewById(R.id.row3))
         bindRow4(view)
         bindSymbolsPanel(view)
+        applyKeyboardLayout(view)
 
         shiftButton = view.findViewById(R.id.keyShift)
         shiftButton?.setOnClickListener { onShiftClick() }
@@ -148,6 +152,44 @@ class CorrectKeyboardService : InputMethodService() {
         }
     }
 
+    private fun systemLanguage(): String = resources.configuration.locales[0].language
+
+    private fun currentLayout(): KeyboardLayout = when (systemLanguage()) {
+        "fr" -> LAYOUT_AZERTY
+        "de" -> LAYOUT_QWERTZ
+        else -> LAYOUT_QWERTY
+    }
+
+    private fun applyKeyboardLayout(view: View) {
+        val layout = currentLayout()
+        fillLetterRow(view.findViewById(R.id.row1), layout.row1)
+        fillLetterRow(view.findViewById(R.id.row2), layout.row2)
+        fillRow3Letters(view.findViewById(R.id.row3), layout.row3)
+        refreshLetterCase()
+    }
+
+    private fun fillLetterRow(row: LinearLayout, chars: String) {
+        var i = 0
+        for (j in 0 until row.childCount) {
+            val child = row.getChildAt(j)
+            if (child is Button && i < chars.length) {
+                child.text = chars[i].toString()
+                i++
+            }
+        }
+    }
+
+    private fun fillRow3Letters(row: LinearLayout, chars: String) {
+        var i = 0
+        for (j in 0 until row.childCount) {
+            val child = row.getChildAt(j)
+            if (child is Button && child.id != R.id.keyShift && child.id != R.id.keyDelete && i < chars.length) {
+                child.text = chars[i].toString()
+                i++
+            }
+        }
+    }
+
     private fun bindRow4(root: View) {
         root.findViewById<Button>(R.id.keyComma).attachRepeat { commit(",") }
         root.findViewById<Button>(R.id.keyPeriod).attachRepeat { commit(".") }
@@ -190,6 +232,7 @@ class CorrectKeyboardService : InputMethodService() {
         val opening = panel.visibility != View.VISIBLE
         panel.visibility = if (opening) View.VISIBLE else View.GONE
         area.visibility = if (opening) View.GONE else View.VISIBLE
+        root.findViewById<Button>(R.id.btnEmoji).text = if (opening) "⌨️" else "😀"
     }
 
     private fun buildEmojiPanel(root: View) {
@@ -333,8 +376,8 @@ class CorrectKeyboardService : InputMethodService() {
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         val newNight = newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK
-        if (newNight != lastUiMode && inputView != null) {
-            lastUiMode = newNight
+        val newLanguage = newConfig.locales[0].language
+        if ((newNight != lastUiMode || newLanguage != lastLanguage) && inputView != null) {
             setInputView(onCreateInputView())
         }
     }
@@ -345,6 +388,7 @@ class CorrectKeyboardService : InputMethodService() {
             showSymbolsPanel(view, false)
             view.findViewById<View>(R.id.emojiPanel).visibility = View.GONE
             view.findViewById<View>(R.id.keyboardArea).visibility = View.VISIBLE
+            view.findViewById<Button>(R.id.btnEmoji).text = "😀"
         }
         lastOriginalText = null
         updateUndoEnabled()
@@ -638,6 +682,11 @@ class CorrectKeyboardService : InputMethodService() {
         private const val KEY_MODEL = "model"
         private const val KEY_HIDE_LONG_TEXT_WARNING = "hide_long_text_warning"
         private const val LONG_TEXT_THRESHOLD = 500
+
+        private data class KeyboardLayout(val row1: String, val row2: String, val row3: String)
+        private val LAYOUT_AZERTY = KeyboardLayout("azertyuiop", "qsdfghjklm", "wxcvbn'")
+        private val LAYOUT_QWERTY = KeyboardLayout("qwertyuiop", "asdfghjkl", "zxcvbnm")
+        private val LAYOUT_QWERTZ = KeyboardLayout("qwertzuiop", "asdfghjkl", "yxcvbnm")
         private val REPLY_HEADER_EN = Regex("(?im)^On .+ wrote:\\s*$")
         private val REPLY_HEADER_FR = Regex("(?im)^Le .+ a écrit\\s*:\\s*$")
         private const val DEFAULT_LANGUAGE = "fr"

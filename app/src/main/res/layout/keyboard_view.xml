@@ -156,7 +156,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
-            <Button android:id="@+id/keyShift" style="@style/KeyWide" android:text="⇧" android:textSize="18sp" />
+            <Button android:id="@+id/keyShift" style="@style/KeyWide" android:text="⇧" android:textSize="24sp" />
             <Button style="@style/Key" android:text="w" />
             <Button style="@style/Key" android:text="x" />
             <Button style="@style/Key" android:text="c" />
