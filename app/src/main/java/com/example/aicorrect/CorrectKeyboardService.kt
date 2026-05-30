@@ -34,6 +34,7 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.emoji2.text.EmojiCompat
 
 class CorrectKeyboardService : InputMethodService() {
 
@@ -76,7 +77,9 @@ class CorrectKeyboardService : InputMethodService() {
         undoButton = view.findViewById(R.id.btnUndo)
         undoButton?.setOnClickListener { undoCorrection() }
         updateUndoEnabled()
-        view.findViewById<Button>(R.id.btnEmoji).setOnClickListener { toggleEmojiPanel(view) }
+        val emojiHeader = view.findViewById<Button>(R.id.btnEmoji)
+        emojiHeader.text = processEmoji("😀")
+        emojiHeader.setOnClickListener { toggleEmojiPanel(view) }
         buildEmojiPanel(view)
 
         bindLetterRow(view.findViewById(R.id.rowDigits))
@@ -153,6 +156,11 @@ class CorrectKeyboardService : InputMethodService() {
     }
 
     private fun systemLanguage(): String = resources.configuration.locales[0].language
+
+    private fun processEmoji(s: CharSequence): CharSequence = try {
+        val ec = EmojiCompat.get()
+        if (ec.loadState == EmojiCompat.LOAD_STATE_SUCCEEDED) ec.process(s) ?: s else s
+    } catch (_: Throwable) { s }
 
     private fun currentLayout(): KeyboardLayout = when (systemLanguage()) {
         "fr" -> LAYOUT_AZERTY
@@ -232,7 +240,7 @@ class CorrectKeyboardService : InputMethodService() {
         val opening = panel.visibility != View.VISIBLE
         panel.visibility = if (opening) View.VISIBLE else View.GONE
         area.visibility = if (opening) View.GONE else View.VISIBLE
-        root.findViewById<Button>(R.id.btnEmoji).text = if (opening) "⌨️" else "😀"
+        root.findViewById<Button>(R.id.btnEmoji).text = processEmoji(if (opening) "⌨️" else "😀")
     }
 
     private fun buildEmojiPanel(root: View) {
@@ -242,7 +250,7 @@ class CorrectKeyboardService : InputMethodService() {
         emojiTabButtons.clear()
         for ((index, category) in EMOJI_CATEGORIES.withIndex()) {
             val tabBtn = Button(this).apply {
-                text = category.icon
+                text = processEmoji(category.icon)
                 textSize = 18f
                 isAllCaps = false
                 setTextColor(ContextCompat.getColor(this@CorrectKeyboardService, R.color.key_text))
@@ -273,7 +281,7 @@ class CorrectKeyboardService : InputMethodService() {
         val textColor = ContextCompat.getColor(this, R.color.key_text)
         for (emoji in EMOJI_CATEGORIES[index].emojis) {
             val btn = Button(this).apply {
-                text = emoji
+                text = processEmoji(emoji)
                 textSize = 20f
                 isAllCaps = false
                 setBackgroundColor(surface)
@@ -388,7 +396,7 @@ class CorrectKeyboardService : InputMethodService() {
             showSymbolsPanel(view, false)
             view.findViewById<View>(R.id.emojiPanel).visibility = View.GONE
             view.findViewById<View>(R.id.keyboardArea).visibility = View.VISIBLE
-            view.findViewById<Button>(R.id.btnEmoji).text = "😀"
+            view.findViewById<Button>(R.id.btnEmoji).text = processEmoji("😀")
         }
         lastOriginalText = null
         updateUndoEnabled()
