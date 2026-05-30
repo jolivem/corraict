@@ -7,6 +7,18 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
+# Charge les variables de l'env Hetzner (non commité, à la racine du projet).
+# Pour buildPush.sh, seul PUBLIC_API_URL est consommé : il est baké dans le
+# bundle Next.js via --build-arg NEXT_PUBLIC_API_URL. Les secrets runtime
+# (MISTRAL_API_KEY, DB, Stripe, etc.) ne sont PAS lus ici — ils sont injectés
+# côté VPS par update.sh dans les containers.
+if [[ -f .env.hetzner ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source .env.hetzner
+  set +a
+fi
+
 BACKEND_IMAGE="ghcr.io/jolivem/aicorrect-backend"
 WEB_IMAGE="ghcr.io/jolivem/aicorrect-web"
 TAG="${1:-latest}"

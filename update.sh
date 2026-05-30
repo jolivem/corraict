@@ -21,37 +21,48 @@ cd "$(dirname "$0")"
 FULL=0
 [[ "${1:-}" == "--full" ]] && FULL=1
 
-if [[ -f .env ]]; then
-  set -a
-  # shellcheck disable=SC1091
-  source .env
-  set +a
+ENV_FILE=".env.hetzner"
+if [[ ! -f "$ENV_FILE" ]]; then
+  echo "ERROR: $ENV_FILE introuvable à la racine du projet." >&2
+  echo "       Copie le fichier depuis ton poste de dev (il contient les secrets prod)." >&2
+  exit 1
 fi
+
+# Export pour le shell courant (utile si on ajoute des conditions sur des vars).
+set -a
+# shellcheck disable=SC1091
+source "$ENV_FILE"
+set +a
+
+# `docker compose --env-file` est passé partout pour que l'interpolation des
+# ${VAR} dans docker-compose.yml lise bien depuis .env.hetzner (et pas le
+# `.env` par défaut, qui n'existe plus dans ce setup).
+DC=(docker compose --env-file "$ENV_FILE")
 
 echo "==> git pull"
 git pull --ff-only
 
 echo "==> pull images backend + web depuis GHCR"
-docker compose pull backend web
+"${DC[@]}" pull backend web
 
 if [[ "$FULL" -eq 1 ]]; then
   echo "==> pull image mariadb"
-  docker compose pull mariadb
+  "${DC[@]}" pull mariadb
 fi
 
 echo "==> restart backend (applique les migrations Prisma au démarrage)"
-docker compose up -d --no-deps backend
+"${DC[@]}" up -d --no-deps backend
 
 echo "==> restart web"
-docker compose up -d --no-deps web
+"${DC[@]}" up -d --no-deps web
 
 if [[ "$FULL" -eq 1 ]]; then
   echo "==> restart mariadb"
-  docker compose up -d --no-deps mariadb
+  "${DC[@]}" up -d --no-deps mariadb
 fi
 
 echo "==> nettoyage des anciennes images"
 docker image prune -f
 
 echo "==> état des services"
-docker compose ps
+"${DC[@]}" ps
