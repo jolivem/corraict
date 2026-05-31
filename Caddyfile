@@ -7,7 +7,7 @@
 #
 # Les noms `aicorrect-backend` et `aicorrect-web` sont les container_name
 # définis dans docker-compose.yml. Caddy les résout via le network Docker
-# partagé `caddy_network`.
+# partagé `default` (créé par docker compose).
 
 {
 	# Adresse de contact Let's Encrypt — remplace par la tienne.
@@ -15,10 +15,46 @@
 }
 
 # ---------------------------------------------------------------------------
+# Snippet réutilisable : headers de sécurité standards.
+# - HSTS : force HTTPS pour ce host + sous-domaines pendant 2 ans (les
+#   sous-domaines mail comme send.aicorrect.app ne sont pas affectés car
+#   HSTS ne s'applique qu'au HTTP/HTTPS, pas au SMTP).
+#   `preload` est volontairement omis (engagement difficilement réversible).
+# - X-Content-Type-Options : empêche les browsers de "deviner" le MIME.
+# - X-Frame-Options : interdit l'embedding dans une iframe (clickjacking).
+# - Referrer-Policy : ne fuite pas l'URL complète en cross-origin.
+# - Permissions-Policy : neutralise les API navigateur dont l'app n'a pas besoin.
+# - -Server / -X-Powered-By : retire les bannières serveur (defense in depth).
+# Pas de Content-Security-Policy ici : Next.js utilise inline scripts/styles
+# pour l'hydratation, un CSP strict casserait l'app. À ajouter plus tard si
+# besoin (nonces SSR).
+# ---------------------------------------------------------------------------
+(security_headers) {
+	header {
+		Strict-Transport-Security "max-age=63072000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"
+		-Server
+		-X-Powered-By
+	}
+}
+
+# ---------------------------------------------------------------------------
 # API backend (NestJS)
 # ---------------------------------------------------------------------------
 api.aicorrect.app {
+	import security_headers
 	encode zstd gzip
+
+	# Limite la taille des bodies au niveau de Caddy : protection DDoS basique
+	# qui coupe les uploads géants avant qu'ils n'atteignent le backend.
+	# Le backend a sa propre limite à 1 MB (express.json + raw Stripe), donc
+	# 2 MB ici laisse une marge sans relâcher la garde.
+	request_body {
+		max_size 2MB
+	}
 
 	# Stripe webhook (/v1/billing/webhook) reçoit du raw body : reverse_proxy
 	# de Caddy passe les bytes tels quels, rien à configurer de spécial.
@@ -34,7 +70,13 @@ api.aicorrect.app {
 # Site web (Next.js standalone)
 # ---------------------------------------------------------------------------
 aicorrect.app {
+	import security_headers
 	encode zstd gzip
+
+	request_body {
+		max_size 2MB
+	}
+
 	reverse_proxy aicorrect-web:3001
 
 	log {
@@ -45,5 +87,6 @@ aicorrect.app {
 
 # Redirige www vers apex (optionnel mais propre pour les certificats)
 www.aicorrect.app {
+	import security_headers
 	redir https://aicorrect.app{uri} permanent
 }
