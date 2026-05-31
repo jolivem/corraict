@@ -14,8 +14,14 @@ export default async function AdminUserDetailPage({
   setRequestLocale(locale);
 
   const me = await serverGet<MeDto>('/v1/auth/me');
-  if (!me) redirect({ href: '/login', locale });
-  if (me.role !== 'ADMIN') redirect({ href: '/dashboard', locale });
+  if (!me) {
+    redirect({ href: '/login', locale });
+    return null;
+  }
+  if (me.role !== 'ADMIN') {
+    redirect({ href: '/dashboard', locale });
+    return null;
+  }
 
   const user = await serverGet<AdminUserDetail>(`/v1/admin/users/${id}`);
   if (!user) notFound();
