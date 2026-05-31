@@ -132,7 +132,12 @@ export class AuthService {
       where: { tokenHash },
       include: { user: true },
     });
-    if (!session || session.expiresAt <= new Date() || session.user.deletedAt) {
+    if (
+      !session ||
+      session.expiresAt <= new Date() ||
+      session.user.deletedAt ||
+      session.user.suspendedAt
+    ) {
       return null;
     }
     // Best-effort lastSeen update; not awaited critical path.

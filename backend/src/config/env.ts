@@ -38,6 +38,12 @@ const envSchema = z.object({
   MISTRAL_API_URL: z.string().url().default('https://api.mistral.ai/v1/chat/completions'),
 
   STRIPE_TRIAL_DAYS: z.coerce.number().int().nonnegative().default(7),
+
+  // Bootstrap admin : emails CSV promus au rôle ADMIN au démarrage du backend.
+  ADMIN_EMAILS: optionalSecret,
+  // Quota mensuel par défaut pour le tier FREE (en nombre de requêtes /v1/correct).
+  // Override par-user possible via User.monthlyRequestQuota.
+  FREE_TIER_MONTHLY_QUOTA: z.coerce.number().int().positive().default(50),
 });
 
 export type AppEnv = z.infer<typeof envSchema>;

@@ -1,6 +1,58 @@
+export type UserRole = 'USER' | 'ADMIN';
+export type UserPlan = 'FREE' | 'PRO';
+
 export interface MeDto {
   userId: string;
   email?: string;
+  role?: UserRole;
+  plan?: UserPlan;
+  locale?: string;
+  /** null = illimité (ADMIN). Sinon override par-user ou défaut env. */
+  effectiveQuota?: number | null;
+}
+
+export interface AdminUserListItem {
+  id: string;
+  email: string;
+  role: UserRole;
+  plan: UserPlan;
+  monthlyRequestQuota: number | null;
+  suspendedAt: string | null;
+  deletedAt: string | null;
+  createdAt: string;
+  requestsThisMonth: number;
+  hasActiveSubscription: boolean;
+}
+
+export interface AdminUserListResponse {
+  items: AdminUserListItem[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface AdminUserDetail extends AdminUserListItem {
+  locale: string;
+  stripeCustomerId: string | null;
+  effectiveQuota: number | null;
+  usageMonthly: Array<{ yearMonth: string; requests: number; words: number }>;
+  subscriptions: Array<{
+    id: string;
+    stripeSubId: string;
+    plan: string;
+    status: string;
+    currentPeriodStart: string;
+    currentPeriodEnd: string;
+    cancelAt: string | null;
+    canceledAt: string | null;
+  }>;
+  recentAuditLogs: Array<{
+    id: string;
+    action: string;
+    ip: string | null;
+    ts: string;
+    metadata: unknown;
+  }>;
 }
 
 export interface UsageMonth {

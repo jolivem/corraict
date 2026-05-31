@@ -45,7 +45,7 @@ export class TokensService {
       where: { tokenHash },
       include: { user: true },
     });
-    if (!row || row.revokedAt || row.user.deletedAt) return null;
+    if (!row || row.revokedAt || row.user.deletedAt || row.user.suspendedAt) return null;
     void this.prisma.apiToken
       .update({ where: { id: row.id }, data: { lastUsedAt: new Date() } })
       .catch(() => undefined);

@@ -7,6 +7,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum UserPlan {
+  FREE
+  PRO
+}
+
 model User {
   id               String    @id @default(cuid())
   email            String    @unique @db.VarChar(255)
@@ -16,6 +26,16 @@ model User {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   deletedAt        DateTime?
+
+  // Admin / business state.
+  // - role: USER par défaut, ADMIN promu via ADMIN_EMAILS (bootstrap au boot).
+  // - plan: tier de facturation. Override manuel admin, sinon dérivé de la subscription.
+  // - monthlyRequestQuota: override par-user du quota du tier (null = quota env du tier).
+  // - suspendedAt: bloqué par un admin (distinct de deletedAt RGPD, réversible).
+  role                UserRole  @default(USER)
+  plan                UserPlan  @default(FREE)
+  monthlyRequestQuota Int?
+  suspendedAt         DateTime?
 
   sessions       Session[]
   apiTokens      ApiToken[]
@@ -27,6 +47,7 @@ model User {
   auditLogs      AuditLog[]
 
   @@index([deletedAt])
+  @@index([role])
 }
 
 // Auth code is keyed by email, not user_id: the user may not exist yet on first request.

@@ -1,5 +1,5 @@
 import { getFormatter, getTranslations, setRequestLocale } from 'next-intl/server';
-import { redirect } from '@/i18n/routing';
+import { Link, redirect } from '@/i18n/routing';
 import { serverGet } from '@/lib/api.server';
 import type {
   ApiTokenDto,
@@ -34,6 +34,14 @@ export default async function DashboardPage({
     serverGet<InvoiceDto[]>('/v1/billing/invoices'),
   ]);
 
+  // Quota = présent uniquement pour les users FREE sans subscription active.
+  // Les ADMIN et les PRO actifs ne sont pas limités → on n'affiche pas la barre.
+  // `effectiveQuota` vient de /v1/auth/me (null pour ADMIN).
+  const hasActiveSub = (subscription?.subscription?.status ?? '') === 'active' ||
+    (subscription?.subscription?.status ?? '') === 'trialing';
+  const isAdmin = me?.role === 'ADMIN';
+  const quotaLimit = !isAdmin && !hasActiveSub ? (me?.effectiveQuota ?? null) : null;
+
   const t = await getTranslations('Dashboard');
   const format = await getFormatter();
 
@@ -44,10 +52,20 @@ export default async function DashboardPage({
           <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
           <p className="mt-1 text-sm text-gray-600">{t('welcome', { email: me?.email ?? '' })}</p>
         </div>
-        <LogoutButton />
+        <div className="flex items-center gap-3">
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="text-sm font-medium text-brand-700 hover:underline"
+            >
+              {t('adminLink')}
+            </Link>
+          )}
+          <LogoutButton />
+        </div>
       </header>
 
-      <UsageCard usage={usage} />
+      <UsageCard usage={usage} quotaLimit={quotaLimit} />
 
       <SubscriptionCard subscription={subscription} />
 
@@ -65,10 +83,19 @@ export default async function DashboardPage({
     return format.dateTime(d, { month: 'long', year: 'numeric' });
   }
 
-  function UsageCard({ usage }: { usage: UsageSummary | null }) {
+  function UsageCard({
+    usage,
+    quotaLimit,
+  }: {
+    usage: UsageSummary | null;
+    quotaLimit: number | null;
+  }) {
     const current = usage?.currentMonth;
     const history = usage?.recentMonths ?? [];
     const maxRequests = Math.max(1, ...history.map((m) => m.requests));
+    const used = current?.requests ?? 0;
+    const pct = quotaLimit ? Math.min(100, Math.round((used / quotaLimit) * 100)) : 0;
+    const nearLimit = quotaLimit !== null && pct >= 80;
 
     return (
       <section className="rounded-xl border border-gray-200 bg-white p-6">
@@ -82,11 +109,24 @@ export default async function DashboardPage({
                 {t('usageCurrentMonth')} · {formatMonth(current.yearMonth)}
               </p>
               <p className="mt-1 text-2xl font-semibold text-gray-900">
-                {t('usageRequests', { count: current.requests })}
+                {quotaLimit
+                  ? t('usageQuotaCount', { used, quota: quotaLimit })
+                  : t('usageRequests', { count: current.requests })}
               </p>
               <p className="text-sm text-gray-600">
                 {t('usageWords', { count: current.words })}
               </p>
+              {quotaLimit && (
+                <div className="mt-3 h-2 w-full overflow-hidden rounded bg-gray-100">
+                  <div
+                    className={`h-full rounded ${nearLimit ? 'bg-amber-500' : 'bg-brand-500'}`}
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+              )}
+              {nearLimit && (
+                <p className="mt-2 text-xs text-amber-700">{t('usageQuotaNearLimit')}</p>
+              )}
             </div>
             {history.length > 1 && (
               <div className="mt-6">

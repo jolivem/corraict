@@ -50,6 +50,9 @@ services:
       AUTH_CODE_TTL_SECONDS: ${AUTH_CODE_TTL_SECONDS:-600}
       AUTH_CODE_LENGTH: ${AUTH_CODE_LENGTH:-6}
       SESSION_TTL_SECONDS: ${SESSION_TTL_SECONDS:-2592000}
+
+      ADMIN_EMAILS: ${ADMIN_EMAILS:-}
+      FREE_TIER_MONTHLY_QUOTA: ${FREE_TIER_MONTHLY_QUOTA:-50}
     depends_on:
       mariadb:
         condition: service_healthy

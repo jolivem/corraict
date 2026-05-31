@@ -21,12 +21,16 @@ import {
 } from './dto/auth.dto';
 import { SessionGuard } from './guards/session.guard';
 import { CurrentUser, type AuthPrincipal } from './decorators/current-user.decorator';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Controller('auth')
 export class AuthController {
   private readonly env = loadEnv();
 
-  constructor(private readonly auth: AuthService) {}
+  constructor(
+    private readonly auth: AuthService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   @Post('request-code')
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -62,8 +66,37 @@ export class AuthController {
 
   @Get('me')
   @UseGuards(SessionGuard)
-  me(@CurrentUser() user: AuthPrincipal) {
-    return { userId: user.userId, email: 'email' in user ? user.email : undefined };
+  async me(@CurrentUser() user: AuthPrincipal) {
+    const row = await this.prisma.user.findUnique({
+      where: { id: user.userId },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        plan: true,
+        locale: true,
+        monthlyRequestQuota: true,
+      },
+    });
+    if (!row) {
+      // SessionGuard l'a validé : ne devrait pas arriver, mais on reste défensif.
+      return { userId: user.userId, email: 'email' in user ? user.email : undefined };
+    }
+    // Quota effectif exposé au front : `null` = illimité (ADMIN ou subscription
+    // active), sinon override par-user ou défaut env. Pour ne pas multiplier
+    // les appels DB, /me ne consulte pas Subscription — c'est le dashboard qui
+    // détermine "actif" via /v1/billing/subscription et cache l'affichage.
+    const effectiveQuota = row.role === 'ADMIN'
+      ? null
+      : (row.monthlyRequestQuota ?? this.env.FREE_TIER_MONTHLY_QUOTA);
+    return {
+      userId: row.id,
+      email: row.email,
+      role: row.role,
+      plan: row.plan,
+      locale: row.locale,
+      effectiveQuota,
+    };
   }
 
   private setSessionCookie(res: Response, token: string, expiresAt: Date): void {
