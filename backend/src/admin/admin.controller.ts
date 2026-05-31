@@ -31,6 +31,11 @@ import {
 export class AdminController {
   constructor(private readonly admin: AdminService) {}
 
+  @Get('usage/stats')
+  usageStats() {
+    return this.admin.getUsageStats();
+  }
+
   @Get('users')
   list(@Query(new ZodValidationPipe(ListUsersQuerySchema)) query: ListUsersQuery) {
     return this.admin.listUsers(query);

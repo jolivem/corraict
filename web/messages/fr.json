@@ -167,7 +167,13 @@
     "subscriptionsTitle": "Souscriptions Stripe",
     "noSubscription": "Aucune souscription.",
     "auditTitle": "Audit récent",
-    "auditEmpty": "Aucun événement."
+    "auditEmpty": "Aucun événement.",
+    "retentionTotal": "Events bruts",
+    "retentionOldest": "Plus ancien",
+    "retentionWindow": "Rétention",
+    "retentionDays": "{days, plural, one {# jour} other {# jours}}",
+    "retentionLastPurge": "Dernière purge",
+    "retentionNeverRun": "Jamais exécutée"
   },
   "Privacy": {
     "title": "Politique de confidentialité",
@@ -206,9 +212,9 @@
   "Imprint": {
     "title": "Mentions légales",
     "publisherTitle": "Éditeur",
-    "publisherBody": "AiCorrect — {{COMPAGNIE}}\\nSiège social : {{ADRESSE}}\\nSIRET : {{SIRET}}\\nResponsable de la publication : {{NOM}}\\nContact : contact@aicorrect.app",
+    "publisherBody": "AiCorrect — [COMPAGNIE]\\nSiège social : [ADRESSE]\\nSIRET : [SIRET]\\nResponsable de la publication : [NOM]\\nContact : contact@aicorrect.app",
     "hostingTitle": "Hébergement",
-    "hostingBody": "Site web et API hébergés par {{HEBERGEUR}} ({{ADRESSE_HEBERGEUR}}).",
+    "hostingBody": "Site web et API hébergés par [HEBERGEUR] ([ADRESSE_HEBERGEUR]).",
     "ipTitle": "Propriété intellectuelle",
     "ipBody": "L'ensemble du contenu de ce site (textes, images, code, logos) est protégé par le droit de la propriété intellectuelle. Toute reproduction sans autorisation préalable est interdite.",
     "contactTitle": "Contact",

@@ -44,6 +44,10 @@ const envSchema = z.object({
   // Quota mensuel par défaut pour le tier FREE (en nombre de requêtes /v1/correct).
   // Override par-user possible via User.monthlyRequestQuota.
   FREE_TIER_MONTHLY_QUOTA: z.coerce.number().int().positive().default(50),
+  // Durée de conservation des UsageEvent bruts (un row par appel /v1/correct).
+  // Au-delà, le cron UsageRetentionService.purge() supprime quotidiennement.
+  // Les agrégats UsageMonthly sont conservés indéfiniment.
+  USAGE_EVENT_RETENTION_DAYS: z.coerce.number().int().positive().default(180),
 });
 
 export type AppEnv = z.infer<typeof envSchema>;

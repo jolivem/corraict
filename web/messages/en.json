@@ -167,7 +167,13 @@
     "subscriptionsTitle": "Stripe subscriptions",
     "noSubscription": "No subscription.",
     "auditTitle": "Recent audit",
-    "auditEmpty": "No events."
+    "auditEmpty": "No events.",
+    "retentionTotal": "Raw events",
+    "retentionOldest": "Oldest",
+    "retentionWindow": "Retention",
+    "retentionDays": "{days, plural, one {# day} other {# days}}",
+    "retentionLastPurge": "Last purge",
+    "retentionNeverRun": "Never ran"
   },
   "Privacy": {
     "title": "Privacy policy",
@@ -206,9 +212,9 @@
   "Imprint": {
     "title": "Legal notice",
     "publisherTitle": "Publisher",
-    "publisherBody": "AiCorrect — {{COMPANY}}\\nRegistered office: {{ADDRESS}}\\nSIRET: {{SIRET}}\\nResponsible for publication: {{NAME}}\\nContact: contact@aicorrect.app",
+    "publisherBody": "AiCorrect — [COMPANY]\\nRegistered office: [ADDRESS]\\nSIRET: [SIRET]\\nResponsible for publication: [NAME]\\nContact: contact@aicorrect.app",
     "hostingTitle": "Hosting",
-    "hostingBody": "Website and API hosted by {{HOST}} ({{HOST_ADDRESS}}).",
+    "hostingBody": "Website and API hosted by [HOST] ([HOST_ADDRESS]).",
     "ipTitle": "Intellectual property",
     "ipBody": "All content on this site (text, images, code, logos) is protected by intellectual property law. Any reproduction without prior authorization is prohibited.",
     "contactTitle": "Contact",

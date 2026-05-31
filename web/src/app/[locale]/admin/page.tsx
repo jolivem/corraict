@@ -1,7 +1,7 @@
 import { getFormatter, getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link, redirect } from '@/i18n/routing';
 import { serverGet } from '@/lib/api.server';
-import type { AdminUserListResponse, MeDto } from '@/lib/types';
+import type { AdminUserListResponse, MeDto, UsageRetentionStats } from '@/lib/types';
 
 type SearchParams = Promise<{ q?: string; page?: string; status?: string }>;
 
@@ -34,7 +34,10 @@ export default async function AdminUsersPage({
 
   const qs = new URLSearchParams({ page: String(page), status });
   if (q) qs.set('q', q);
-  const list = await serverGet<AdminUserListResponse>(`/v1/admin/users?${qs.toString()}`);
+  const [list, stats] = await Promise.all([
+    serverGet<AdminUserListResponse>(`/v1/admin/users?${qs.toString()}`),
+    serverGet<UsageRetentionStats>('/v1/admin/usage/stats'),
+  ]);
 
   const t = await getTranslations('Admin');
   const format = await getFormatter();
@@ -55,6 +58,39 @@ export default async function AdminUsersPage({
           {t('backToDashboard')}
         </Link>
       </header>
+
+      {stats && (
+        <section className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-xs text-gray-600">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
+            <span>
+              <span className="text-gray-500">{t('retentionTotal')} :</span>{' '}
+              <span className="font-medium text-gray-900 tabular-nums">{stats.totalEvents}</span>
+            </span>
+            <span>
+              <span className="text-gray-500">{t('retentionOldest')} :</span>{' '}
+              <span className="font-medium text-gray-900">
+                {stats.oldestTs
+                  ? format.dateTime(new Date(stats.oldestTs), { dateStyle: 'medium' })
+                  : '—'}
+              </span>
+            </span>
+            <span>
+              <span className="text-gray-500">{t('retentionWindow')} :</span>{' '}
+              <span className="font-medium text-gray-900 tabular-nums">
+                {t('retentionDays', { days: stats.retentionDays })}
+              </span>
+            </span>
+            <span>
+              <span className="text-gray-500">{t('retentionLastPurge')} :</span>{' '}
+              <span className="font-medium text-gray-900">
+                {stats.lastPurgeTs
+                  ? `${format.dateTime(new Date(stats.lastPurgeTs), { dateStyle: 'short', timeStyle: 'short' })} (${stats.lastPurgeDeleted ?? 0})`
+                  : t('retentionNeverRun')}
+              </span>
+            </span>
+          </div>
+        </section>
+      )}
 
       <form className="flex flex-wrap gap-2" method="get">
         <input

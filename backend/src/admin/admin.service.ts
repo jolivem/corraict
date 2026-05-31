@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import { loadEnv } from '../config/env';
 import { PrismaService } from '../prisma/prisma.service';
+import { UsageRetentionService, type UsageRetentionStats } from '../usage/usage-retention.service';
 import type { ListUsersQuery } from './dto/admin.dto';
 
 export interface AdminUserListItem {
@@ -45,7 +46,16 @@ export interface AdminUserDetail extends AdminUserListItem {
 export class AdminService {
   private readonly env = loadEnv();
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly retention: UsageRetentionService,
+  ) {}
+
+  // ─── Stats opérationnelles ───────────────────────────────────────────────
+
+  getUsageStats(): Promise<UsageRetentionStats> {
+    return this.retention.getStats();
+  }
 
   // ─── Listing ─────────────────────────────────────────────────────────────
 

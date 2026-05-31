@@ -31,6 +31,14 @@ export interface AdminUserListResponse {
   limit: number;
 }
 
+export interface UsageRetentionStats {
+  totalEvents: number;
+  oldestTs: string | null;
+  retentionDays: number;
+  lastPurgeTs: string | null;
+  lastPurgeDeleted: number | null;
+}
+
 export interface AdminUserDetail extends AdminUserListItem {
   locale: string;
   stripeCustomerId: string | null;

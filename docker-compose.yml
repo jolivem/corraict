@@ -53,6 +53,7 @@ services:
 
       ADMIN_EMAILS: ${ADMIN_EMAILS:-}
       FREE_TIER_MONTHLY_QUOTA: ${FREE_TIER_MONTHLY_QUOTA:-50}
+      USAGE_EVENT_RETENTION_DAYS: ${USAGE_EVENT_RETENTION_DAYS:-180}
     depends_on:
       mariadb:
         condition: service_healthy

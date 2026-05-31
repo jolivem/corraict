@@ -207,3 +207,11 @@ model AuditLog {
   @@index([userId, ts])
   @@index([action, ts])
 }
+
+// Petit KV pour métadonnées opérationnelles (ex. "lastUsageEventPurge").
+// Une seule row par clé, mise à jour par les jobs ; jamais purgé.
+model OpsMeta {
+  key       String   @id @db.VarChar(64)
+  value     String   @db.VarChar(255)
+  updatedAt DateTime @updatedAt
+}
