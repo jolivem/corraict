@@ -30,4 +30,15 @@ object EncryptedKeyStore {
     fun setApiKey(context: Context, key: String) {
         getStore(context).setApiKeySync(key)
     }
+
+    /**
+     * Retrieves the AiCorrect server API token (Bearer aic_...) — utilisé en
+     * mode SERVER. Stocké chiffré, distinct de la clé Mistral.
+     */
+    fun getServerToken(context: Context): String =
+        getStore(context).getServerTokenSync()
+
+    fun setServerToken(context: Context, token: String) {
+        getStore(context).setServerTokenSync(token)
+    }
 }

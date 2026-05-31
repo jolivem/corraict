@@ -30,6 +30,7 @@ class EncryptedDataStore(private val context: Context) {
         private const val MASTER_KEY_URI = "android-keystore://master_key"
 
         private val KEY_API_KEY = stringPreferencesKey("api_key")
+        private val KEY_SERVER_TOKEN = stringPreferencesKey("server_token")
     }
 
     private val aead: Aead by lazy {
@@ -67,6 +68,20 @@ class EncryptedDataStore(private val context: Context) {
         }
     }
 
+    suspend fun getServerToken(): String {
+        return dataStore.data.map { preferences ->
+            val encrypted = preferences[KEY_SERVER_TOKEN] ?: return@map ""
+            decrypt(encrypted)
+        }.first()
+    }
+
+    suspend fun setServerToken(token: String) {
+        val encrypted = encrypt(token)
+        dataStore.edit { preferences ->
+            preferences[KEY_SERVER_TOKEN] = encrypted
+        }
+    }
+
     private fun encrypt(text: String): String {
         if (text.isEmpty()) return ""
         val ciphertext = aead.encrypt(text.toByteArray(Charsets.UTF_8), null)
@@ -84,8 +99,10 @@ class EncryptedDataStore(private val context: Context) {
         }
     }
 
-    // Synchronous access for compatibility with existing code if needed, 
+    // Synchronous access for compatibility with existing code if needed,
     // but ideally the app should move to coroutines.
     fun getApiKeySync(): String = runBlocking { getApiKey() }
     fun setApiKeySync(key: String) = runBlocking { setApiKey(key) }
+    fun getServerTokenSync(): String = runBlocking { getServerToken() }
+    fun setServerTokenSync(token: String) = runBlocking { setServerToken(token) }
 }

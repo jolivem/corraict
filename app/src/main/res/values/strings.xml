@@ -19,6 +19,14 @@
     <string name="hint_api_key">Colle ta clé ici</string>
     <string name="label_model">Modèle</string>
     <string name="provider_mistral">Mistral</string>
+    <string name="label_mode">Mode de correction</string>
+    <string name="mode_direct_mistral">Direct (clé Mistral)</string>
+    <string name="mode_server">Serveur AiCorrect (abonnement)</string>
+    <string name="label_server_token">Token AiCorrect</string>
+    <string name="hint_server_token">aic_…  (créé depuis le dashboard web)</string>
+    <string name="section_direct">Configuration mode direct</string>
+    <string name="section_server">Configuration mode serveur</string>
+    <string name="toast_no_server_token">Aucun token AiCorrect configuré</string>
     <string name="toast_no_api_key">Aucune clé API configurée</string>
     <string name="toast_correcting">Correction en cours…</string>
     <string name="toast_correction_failed">Échec de la correction</string>

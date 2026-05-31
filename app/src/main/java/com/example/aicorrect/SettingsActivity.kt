@@ -7,7 +7,10 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.MenuItem
+import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -19,9 +22,12 @@ class SettingsActivity : AppCompatActivity() {
 
     private lateinit var switchAutoCorrect: SwitchMaterial
     private lateinit var spinnerLanguage: Spinner
-    private lateinit var spinnerProvider: Spinner
+    private lateinit var spinnerMode: Spinner
+    private lateinit var sectionDirect: LinearLayout
+    private lateinit var sectionServer: LinearLayout
     private lateinit var editModel: TextInputEditText
     private lateinit var editApiKey: TextInputEditText
+    private lateinit var editServerToken: TextInputEditText
     private lateinit var buttonSave: MaterialButton
     private lateinit var buttonTestConnection: MaterialButton
 
@@ -45,9 +51,12 @@ class SettingsActivity : AppCompatActivity() {
 
         switchAutoCorrect = findViewById(R.id.switchAutoCorrect)
         spinnerLanguage = findViewById(R.id.spinnerLanguage)
-        spinnerProvider = findViewById(R.id.spinnerProvider)
+        spinnerMode = findViewById(R.id.spinnerMode)
+        sectionDirect = findViewById(R.id.sectionDirect)
+        sectionServer = findViewById(R.id.sectionServer)
         editModel = findViewById(R.id.editModel)
         editApiKey = findViewById(R.id.editApiKey)
+        editServerToken = findViewById(R.id.editServerToken)
         buttonSave = findViewById(R.id.buttonSave)
         buttonTestConnection = findViewById(R.id.buttonTestConnection)
 
@@ -60,11 +69,14 @@ class SettingsActivity : AppCompatActivity() {
         languageAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerLanguage.adapter = languageAdapter
 
-        val providerLabels = listOf(getString(R.string.provider_mistral))
-        val providerCodes = listOf(PROVIDER_MISTRAL)
-        val providerAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, providerLabels)
-        providerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinnerProvider.adapter = providerAdapter
+        val modeLabels = listOf(
+            getString(R.string.mode_direct_mistral),
+            getString(R.string.mode_server),
+        )
+        val modeCodes = listOf(MODE_DIRECT_MISTRAL, MODE_SERVER)
+        val modeAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, modeLabels)
+        modeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerMode.adapter = modeAdapter
 
         val prefs = getPreferences()
         switchAutoCorrect.isChecked = prefs.getBoolean(KEY_AUTO_CORRECT, true)
@@ -72,29 +84,46 @@ class SettingsActivity : AppCompatActivity() {
         val savedLanguage = prefs.getString(KEY_LANGUAGE, DEFAULT_LANGUAGE) ?: DEFAULT_LANGUAGE
         spinnerLanguage.setSelection(languageCodes.indexOf(savedLanguage).coerceAtLeast(0))
 
-        val savedProvider = prefs.getString(KEY_PROVIDER, PROVIDER_MISTRAL) ?: PROVIDER_MISTRAL
-        spinnerProvider.setSelection(providerCodes.indexOf(savedProvider).coerceAtLeast(0))
+        val savedMode = prefs.getString(KEY_MODE, MODE_DIRECT_MISTRAL) ?: MODE_DIRECT_MISTRAL
+        spinnerMode.setSelection(modeCodes.indexOf(savedMode).coerceAtLeast(0))
+        updateModeSectionsVisibility(savedMode)
+
+        spinnerMode.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                updateModeSectionsVisibility(modeCodes[position])
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
 
         editModel.setText(prefs.getString(KEY_MODEL, DEFAULT_MODEL) ?: DEFAULT_MODEL)
 
         migrateLegacyApiKey(prefs)
         editApiKey.setText(EncryptedKeyStore.getApiKey(this))
+        editServerToken.setText(EncryptedKeyStore.getServerToken(this))
 
         buttonTestConnection.setOnClickListener { runConnectionTest() }
 
         buttonSave.setOnClickListener {
             val modelValue = editModel.text?.toString()?.trim().orEmpty().ifEmpty { DEFAULT_MODEL }
+            val modeValue = modeCodes[spinnerMode.selectedItemPosition]
             prefs.edit()
                 .putBoolean(KEY_AUTO_CORRECT, switchAutoCorrect.isChecked)
                 .putString(KEY_LANGUAGE, languageCodes[spinnerLanguage.selectedItemPosition])
-                .putString(KEY_PROVIDER, providerCodes[spinnerProvider.selectedItemPosition])
+                .putString(KEY_MODE, modeValue)
                 .putString(KEY_MODEL, modelValue)
                 .apply()
 
             EncryptedKeyStore.setApiKey(this, editApiKey.text?.toString().orEmpty())
+            EncryptedKeyStore.setServerToken(this, editServerToken.text?.toString().orEmpty())
 
             Toast.makeText(this, getString(R.string.toast_settings_saved), Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun updateModeSectionsVisibility(mode: String) {
+        val isServer = mode == MODE_SERVER
+        sectionDirect.visibility = if (isServer) View.GONE else View.VISIBLE
+        sectionServer.visibility = if (isServer) View.VISIBLE else View.GONE
     }
 
     private fun migrateLegacyApiKey(prefs: SharedPreferences) {
@@ -153,11 +182,12 @@ class SettingsActivity : AppCompatActivity() {
         const val PREFS_NAME = "ime_prefs"
         const val KEY_AUTO_CORRECT = "auto_correct"
         const val KEY_LANGUAGE = "language"
-        const val KEY_PROVIDER = "provider"
+        const val KEY_MODE = "mode"
         const val KEY_MODEL = "model"
         const val KEY_API_KEY = "api_key"
         const val DEFAULT_LANGUAGE = "fr"
-        const val PROVIDER_MISTRAL = "mistral"
+        const val MODE_DIRECT_MISTRAL = "direct_mistral"
+        const val MODE_SERVER = "server"
         const val DEFAULT_MODEL = "mistral-small-latest"
     }
 }

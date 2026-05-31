@@ -51,7 +51,13 @@ export class QuotaService {
       });
     }
 
-    // Subscription active = accès illimité (le tier PRO suppose une sub).
+    // "Cadeau admin" : si un admin a forcé manuellement le plan à PRO via
+    // /v1/admin/users/:id/plan, le user a accès illimité sans avoir besoin
+    // d'une Subscription Stripe. Le champ User.plan reste FREE par défaut
+    // pour les comptes ordinaires et n'est jamais touché par les webhooks.
+    if (user.plan === 'PRO') return;
+
+    // Subscription Stripe active = accès illimité (chemin standard payant).
     const activeSub = await this.prisma.subscription.findFirst({
       where: { userId, status: { in: ['trialing', 'active'] } },
       select: { id: true },

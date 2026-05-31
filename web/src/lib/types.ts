@@ -43,6 +43,8 @@ export interface AdminUserDetail extends AdminUserListItem {
   locale: string;
   stripeCustomerId: string | null;
   effectiveQuota: number | null;
+  /** Accès Pro offert par l'admin (User.plan='PRO' sans Subscription active). */
+  isComplimentaryPro: boolean;
   usageMonthly: Array<{ yearMonth: string; requests: number; words: number }>;
   subscriptions: Array<{
     id: string;

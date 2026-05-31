@@ -35,11 +35,13 @@ export default async function DashboardPage({
   ]);
 
   // Quota = présent uniquement pour les users FREE sans subscription active.
-  // Les ADMIN et les PRO actifs ne sont pas limités → on n'affiche pas la barre.
-  // `effectiveQuota` vient de /v1/auth/me (null pour ADMIN).
+  // Les ADMIN, les PRO actifs et les "PRO offerts" (plan=PRO sans Stripe sub)
+  // ne sont pas limités → on n'affiche pas la barre.
+  // `effectiveQuota` vient de /v1/auth/me (null pour ADMIN ou plan=PRO).
   const hasActiveSub = (subscription?.subscription?.status ?? '') === 'active' ||
     (subscription?.subscription?.status ?? '') === 'trialing';
   const isAdmin = me?.role === 'ADMIN';
+  const isComplimentaryPro = me?.plan === 'PRO' && !hasActiveSub;
   const quotaLimit = !isAdmin && !hasActiveSub ? (me?.effectiveQuota ?? null) : null;
 
   const t = await getTranslations('Dashboard');
@@ -67,7 +69,7 @@ export default async function DashboardPage({
 
       <UsageCard usage={usage} quotaLimit={quotaLimit} />
 
-      <SubscriptionCard subscription={subscription} />
+      <SubscriptionCard subscription={subscription} isComplimentaryPro={isComplimentaryPro} />
 
       <TokensSection initialTokens={tokens ?? []} />
 
@@ -159,7 +161,13 @@ export default async function DashboardPage({
     );
   }
 
-  function SubscriptionCard({ subscription }: { subscription: SubscriptionPayload | null }) {
+  function SubscriptionCard({
+    subscription,
+    isComplimentaryPro,
+  }: {
+    subscription: SubscriptionPayload | null;
+    isComplimentaryPro: boolean;
+  }) {
     const sub = subscription?.subscription ?? null;
     const statusKey = (sub?.status ?? '') as SubscriptionStatus;
     const statusLabels: Record<SubscriptionStatus, string> = {
@@ -176,7 +184,12 @@ export default async function DashboardPage({
     return (
       <section className="rounded-xl border border-gray-200 bg-white p-6">
         <h2 className="text-lg font-semibold text-gray-900">{t('subscriptionTitle')}</h2>
-        {!sub ? (
+        {!sub && isComplimentaryPro ? (
+          <div className="mt-4 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+            <p className="font-medium">{t('subscriptionComplimentaryTitle')}</p>
+            <p className="mt-1 text-emerald-800">{t('subscriptionComplimentaryBody')}</p>
+          </div>
+        ) : !sub ? (
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-gray-600">{t('subscriptionNone')}</p>
             <BillingActions

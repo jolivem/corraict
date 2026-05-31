@@ -82,11 +82,13 @@ export class AuthController {
       // SessionGuard l'a validé : ne devrait pas arriver, mais on reste défensif.
       return { userId: user.userId, email: 'email' in user ? user.email : undefined };
     }
-    // Quota effectif exposé au front : `null` = illimité (ADMIN ou subscription
-    // active), sinon override par-user ou défaut env. Pour ne pas multiplier
-    // les appels DB, /me ne consulte pas Subscription — c'est le dashboard qui
-    // détermine "actif" via /v1/billing/subscription et cache l'affichage.
-    const effectiveQuota = row.role === 'ADMIN'
+    // Quota effectif exposé au front : `null` = illimité.
+    // Cas illimité : ADMIN, plan=PRO (cadeau admin), ou subscription Stripe
+    // active. Pour ne pas multiplier les appels DB, /me ne consulte pas
+    // Subscription — c'est le dashboard qui détermine "actif" via
+    // /v1/billing/subscription et masque la barre de quota de son côté.
+    const isUnlimited = row.role === 'ADMIN' || row.plan === 'PRO';
+    const effectiveQuota = isUnlimited
       ? null
       : (row.monthlyRequestQuota ?? this.env.FREE_TIER_MONTHLY_QUOTA);
     return {

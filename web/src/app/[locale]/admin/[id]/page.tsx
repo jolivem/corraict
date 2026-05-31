@@ -42,7 +42,17 @@ export default async function AdminUserDetailPage({
           <Link href="/admin" className="text-sm text-brand-700 hover:underline">
             ← {t('backToList')}
           </Link>
-          <h1 className="mt-2 text-2xl font-bold text-gray-900">{user.email}</h1>
+          <h1 className="mt-2 flex flex-wrap items-center gap-2 text-2xl font-bold text-gray-900">
+            <span>{user.email}</span>
+            {user.isComplimentaryPro && (
+              <span
+                className="inline-flex rounded bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800"
+                title={t('complimentaryProTooltip')}
+              >
+                {t('complimentaryProBadge')}
+              </span>
+            )}
+          </h1>
           <p className="mt-1 text-sm text-gray-600">
             {t('detailCreated', {
               date: format.dateTime(new Date(user.createdAt), { dateStyle: 'medium' }),

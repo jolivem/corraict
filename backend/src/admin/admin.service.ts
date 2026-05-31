@@ -22,6 +22,11 @@ export interface AdminUserDetail extends AdminUserListItem {
   locale: string;
   stripeCustomerId: string | null;
   effectiveQuota: number | null; // null si PRO/ADMIN/sub active = illimité
+  /**
+   * True si l'utilisateur a un accès Pro sans souscription Stripe active —
+   * autrement dit, un "cadeau admin" via `User.plan = 'PRO'`.
+   */
+  isComplimentaryPro: boolean;
   usageMonthly: Array<{ yearMonth: string; requests: number; words: number }>;
   subscriptions: Array<{
     id: string;
@@ -176,7 +181,9 @@ export class AdminService {
       ]);
 
     const hasActiveSubscription = activeSub !== null;
-    const isUnlimited = user.role === 'ADMIN' || hasActiveSubscription;
+    const isComplimentaryPro = user.plan === 'PRO' && !hasActiveSubscription;
+    const isUnlimited =
+      user.role === 'ADMIN' || hasActiveSubscription || user.plan === 'PRO';
     const effectiveQuota = isUnlimited
       ? null
       : (user.monthlyRequestQuota ?? this.env.FREE_TIER_MONTHLY_QUOTA);
@@ -199,6 +206,7 @@ export class AdminService {
       requestsThisMonth,
       hasActiveSubscription,
       effectiveQuota,
+      isComplimentaryPro,
       usageMonthly,
       subscriptions,
       recentAuditLogs: recentAuditLogs.map((l) => ({
