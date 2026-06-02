@@ -37,14 +37,15 @@ model User {
   monthlyRequestQuota Int?
   suspendedAt         DateTime?
 
-  sessions       Session[]
-  apiTokens      ApiToken[]
-  subscriptions  Subscription[]
-  paymentMethods PaymentMethod[]
-  invoices       Invoice[]
-  usageEvents    UsageEvent[]
-  usageMonthly   UsageMonthly[]
-  auditLogs      AuditLog[]
+  sessions          Session[]
+  apiTokens         ApiToken[]
+  subscriptions     Subscription[]
+  paymentMethods    PaymentMethod[]
+  invoices          Invoice[]
+  usageEvents       UsageEvent[]
+  usageMonthly      UsageMonthly[]
+  auditLogs         AuditLog[]
+  termsAcceptances  UserTermsAcceptance[]
 
   @@index([deletedAt])
   @@index([role])
@@ -214,4 +215,52 @@ model OpsMeta {
   key       String   @id @db.VarChar(64)
   value     String   @db.VarChar(255)
   updatedAt DateTime @updatedAt
+}
+
+// CGU versionnées. Métadonnées + activation, contenu dans `TermsVersionLocale`.
+// Invariant applicatif : au plus 1 row avec isActive=true (transaction d'activation
+// désactive les autres). createdBy nullable pour permettre seeds/bootstrap.
+model TermsVersion {
+  id          String   @id @default(cuid())
+  label       String   @unique @db.VarChar(50)
+  isActive    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+
+  locales     TermsVersionLocale[]
+  acceptances UserTermsAcceptance[]
+
+  @@index([isActive])
+}
+
+// Contenu markdown des CGU pour une (version, langue). Permet d'ajouter
+// `es`, `de`, `it`, `pt-BR` sans migration : juste l'admin qui upsert.
+model TermsVersionLocale {
+  id             BigInt       @id @default(autoincrement())
+  termsVersionId String
+  termsVersion   TermsVersion @relation(fields: [termsVersionId], references: [id], onDelete: Cascade)
+  locale         String       @db.VarChar(8)
+  body           String       @db.LongText
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([termsVersionId, locale])
+  @@index([termsVersionId])
+}
+
+// Trace d'acceptation user × version. onDelete: Restrict sur termsVersionId :
+// la version reste indélétable tant qu'au moins un user l'a acceptée
+// (preuve légale). UNIQUE(userId, termsVersionId) garantit l'idempotence.
+model UserTermsAcceptance {
+  id             BigInt       @id @default(autoincrement())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  termsVersionId String
+  termsVersion   TermsVersion @relation(fields: [termsVersionId], references: [id], onDelete: Restrict)
+  acceptedAt     DateTime     @default(now())
+  ip             String?      @db.VarChar(45)
+
+  @@unique([userId, termsVersionId])
+  @@index([userId])
+  @@index([termsVersionId])
 }

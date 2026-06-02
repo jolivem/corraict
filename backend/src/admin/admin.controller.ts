@@ -1,12 +1,14 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
   Param,
   Patch,
   Post,
+  Put,
   Query,
   Req,
   UseGuards,
@@ -15,6 +17,16 @@ import type { Request } from 'express';
 import { SessionGuard } from '../auth/guards/session.guard';
 import { CurrentUser, type AuthPrincipal } from '../auth/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
+import {
+  CreateTermsVersionSchema,
+  LocaleParamSchema,
+  UpdateTermsVersionSchema,
+  UpsertLocaleBodySchema,
+  type CreateTermsVersionDto,
+  type UpdateTermsVersionDto,
+  type UpsertLocaleBodyDto,
+} from '../terms/dto/terms.dto';
+import { TermsService } from '../terms/terms.service';
 import { AdminGuard } from './guards/admin.guard';
 import { AdminService } from './admin.service';
 import {
@@ -29,7 +41,10 @@ import {
 @Controller('admin')
 @UseGuards(SessionGuard, AdminGuard)
 export class AdminController {
-  constructor(private readonly admin: AdminService) {}
+  constructor(
+    private readonly admin: AdminService,
+    private readonly terms: TermsService,
+  ) {}
 
   @Get('usage/stats')
   usageStats() {
@@ -86,6 +101,83 @@ export class AdminController {
     @Req() req: Request,
   ): Promise<void> {
     await this.admin.setQuota(id, body.monthlyRequestQuota, actor.userId, this.clientIp(req));
+  }
+
+  // ─── Terms versions (CGU) ────────────────────────────────────────────────
+
+  @Get('terms')
+  listTerms() {
+    return this.terms.listVersions();
+  }
+
+  @Get('terms/:id')
+  termsDetail(@Param('id') id: string) {
+    return this.terms.getVersionDetail(id);
+  }
+
+  @Post('terms')
+  async createTerms(
+    @Body(new ZodValidationPipe(CreateTermsVersionSchema)) body: CreateTermsVersionDto,
+    @CurrentUser() actor: AuthPrincipal,
+    @Req() req: Request,
+  ) {
+    return this.terms.createVersion(body.label, actor.userId, this.clientIp(req));
+  }
+
+  @Patch('terms/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async renameTerms(
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(UpdateTermsVersionSchema)) body: UpdateTermsVersionDto,
+    @CurrentUser() actor: AuthPrincipal,
+    @Req() req: Request,
+  ): Promise<void> {
+    await this.terms.renameVersion(id, body.label, actor.userId, this.clientIp(req));
+  }
+
+  @Post('terms/:id/activate')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async activateTerms(
+    @Param('id') id: string,
+    @CurrentUser() actor: AuthPrincipal,
+    @Req() req: Request,
+  ): Promise<void> {
+    await this.terms.activateVersion(id, actor.userId, this.clientIp(req));
+  }
+
+  @Delete('terms/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteTerms(
+    @Param('id') id: string,
+    @CurrentUser() actor: AuthPrincipal,
+    @Req() req: Request,
+  ): Promise<void> {
+    await this.terms.deleteVersion(id, actor.userId, this.clientIp(req));
+  }
+
+  // La validation du `locale` se fait via Zod sur le Param ; on extrait le
+  // string depuis l'objet { locale } pour rester compatible avec le pipe.
+  @Put('terms/:id/locales/:locale')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async upsertLocale(
+    @Param('id') id: string,
+    @Param(new ZodValidationPipe(LocaleParamSchema)) { locale }: { locale: string },
+    @Body(new ZodValidationPipe(UpsertLocaleBodySchema)) body: UpsertLocaleBodyDto,
+    @CurrentUser() actor: AuthPrincipal,
+    @Req() req: Request,
+  ): Promise<void> {
+    await this.terms.upsertLocale(id, locale, body.body, actor.userId, this.clientIp(req));
+  }
+
+  @Delete('terms/:id/locales/:locale')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteLocale(
+    @Param('id') id: string,
+    @Param(new ZodValidationPipe(LocaleParamSchema)) { locale }: { locale: string },
+    @CurrentUser() actor: AuthPrincipal,
+    @Req() req: Request,
+  ): Promise<void> {
+    await this.terms.deleteLocale(id, locale, actor.userId, this.clientIp(req));
   }
 
   private clientIp(req: Request): string | null {

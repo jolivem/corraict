@@ -1,6 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { loadEnv } from '../config/env';
 import { PrismaService } from '../prisma/prisma.service';
+import { TermsService } from '../terms/terms.service';
 import { StripeClient } from './stripe.client';
 
 @Injectable()
@@ -11,6 +12,7 @@ export class BillingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly stripe: StripeClient,
+    private readonly terms: TermsService,
   ) {}
 
   /**
@@ -38,6 +40,11 @@ export class BillingService {
     userId: string,
     opts: { successPath?: string; cancelPath?: string },
   ): Promise<{ url: string }> {
+    // Garde-fou CGU : refuse de créer une session Stripe tant que l'utilisateur
+    // n'a pas accepté la version active des CGU. Sans-op si aucune version
+    // n'est active (rétrocompat avant déploiement de la feature).
+    await this.terms.requireAcceptedFor(userId);
+
     const customerId = await this.ensureCustomer(userId);
     const priceId = this.stripe.requirePriceId();
     const successPath = opts.successPath ?? '/billing/success';

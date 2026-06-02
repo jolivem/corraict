@@ -7,6 +7,7 @@ import { BillingModule } from './billing/billing.module';
 import { CorrectModule } from './correct/correct.module';
 import { HealthModule } from './health/health.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { TermsModule } from './terms/terms.module';
 import { UsageModule } from './usage/usage.module';
 import { UsersModule } from './users/users.module';
 
@@ -17,6 +18,7 @@ import { UsersModule } from './users/users.module';
     PrismaModule,
     HealthModule,
     AuthModule,
+    TermsModule,
     UsageModule,
     CorrectModule,
     BillingModule,

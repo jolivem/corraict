@@ -48,6 +48,10 @@ const envSchema = z.object({
   // Au-delà, le cron UsageRetentionService.purge() supprime quotidiennement.
   // Les agrégats UsageMonthly sont conservés indéfiniment.
   USAGE_EVENT_RETENTION_DAYS: z.coerce.number().int().positive().default(180),
+
+  // Locale de fallback pour les CGU si la langue demandée n'a pas de contenu
+  // dans la version active. BCP 47 lite (ex. "fr", "en"). Default: fr.
+  TERMS_FALLBACK_LOCALE: z.string().min(2).max(8).default('fr'),
 });
 
 export type AppEnv = z.infer<typeof envSchema>;

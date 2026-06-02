@@ -39,6 +39,39 @@ export interface UsageRetentionStats {
   lastPurgeDeleted: number | null;
 }
 
+// ─── CGU ──────────────────────────────────────────────────────────────────
+
+/** Réponse de GET /v1/terms/active?locale=... — la locale servie peut différer
+ *  de celle demandée si fallback. `null` au top-level si aucune version active. */
+export interface ActiveTermsDto {
+  id: string;
+  label: string;
+  locale: string;
+  body: string;
+  availableLocales: string[];
+  updatedAt: string;
+}
+
+export interface TermsStatusDto {
+  activeVersionId: string | null;
+  accepted: boolean;
+  acceptedAt: string | null;
+}
+
+export interface AdminTermsListItem {
+  id: string;
+  label: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  acceptanceCount: number;
+  locales: string[];
+}
+
+export interface AdminTermsDetail extends AdminTermsListItem {
+  bodies: Array<{ locale: string; body: string; updatedAt: string }>;
+}
+
 export interface AdminUserDetail extends AdminUserListItem {
   locale: string;
   stripeCustomerId: string | null;

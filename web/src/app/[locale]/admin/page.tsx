@@ -54,9 +54,14 @@ export default async function AdminUsersPage({
           <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
           <p className="mt-1 text-sm text-gray-600">{t('subtitle', { total })}</p>
         </div>
-        <Link href="/dashboard" className="text-sm text-brand-700 hover:underline">
-          {t('backToDashboard')}
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link href="/admin/terms" className="text-sm font-medium text-brand-700 hover:underline">
+            {t('termsLink')}
+          </Link>
+          <Link href="/dashboard" className="text-sm text-brand-700 hover:underline">
+            {t('backToDashboard')}
+          </Link>
+        </div>
       </header>
 
       {stats && (
