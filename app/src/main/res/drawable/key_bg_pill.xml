@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Fond arrondi "pastille" pour la barre d'outils (Corriger / undo / smiley) -->
 <ripple xmlns:android="http://schemas.android.com/apk/res/android"
     android:color="@color/key_ripple">
     <item android:id="@android:id/mask">
         <shape android:shape="rectangle">
             <solid android:color="@android:color/white" />
-            <corners android:radius="8dp" />
+            <corners android:radius="24dp" />
         </shape>
     </item>
     <item>
         <shape android:shape="rectangle">
             <solid android:color="@android:color/white" />
-            <corners android:radius="8dp" />
+            <corners android:radius="24dp" />
         </shape>
     </item>
 </ripple>

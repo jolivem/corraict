@@ -5,7 +5,9 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.app.AlertDialog
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
+import android.net.Uri
 import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.graphics.Canvas
@@ -20,6 +22,8 @@ import android.inputmethodservice.InputMethodService
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.text.InputType
+import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -30,6 +34,8 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.GridLayout
 import android.widget.LinearLayout
+import android.widget.PopupWindow
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -61,11 +67,18 @@ class CorrectKeyboardService : InputMethodService() {
     private var waveDrawable: WaveBackgroundDrawable? = null
     private var pendingResult: PendingResult? = null
 
+    private var accentPopup: PopupWindow? = null
+    private var accentChips: List<TextView> = emptyList()
+    private var accentVariants: List<Char> = emptyList()
+    private var accentHighlightIndex = 0
+    private var accentPopupShowing = false
+
     private data class PendingResult(val text: String, val errorMsg: String?)
 
     override fun onCreateInputView(): View {
         lastUiMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
         lastLanguage = systemLanguage()
+        dismissAccentPopup()
         letterButtons.clear()
         val view = layoutInflater.inflate(R.layout.keyboard_view, null)
 
@@ -137,7 +150,7 @@ class CorrectKeyboardService : InputMethodService() {
             val child = row.getChildAt(i)
             if (child is Button) {
                 letterButtons.add(child)
-                child.attachRepeat { commit(child.text.toString()) }
+                child.attachLetterKey()
             }
         }
     }
@@ -147,7 +160,7 @@ class CorrectKeyboardService : InputMethodService() {
             val child = row.getChildAt(i)
             if (child is Button && child.id != R.id.keyShift && child.id != R.id.keyDelete) {
                 letterButtons.add(child)
-                child.attachRepeat { commit(child.text.toString()) }
+                child.attachLetterKey()
             }
         }
     }
@@ -223,6 +236,188 @@ class CorrectKeyboardService : InputMethodService() {
                 else -> false
             }
         }
+    }
+
+    private fun dp(value: Float): Int = (value * resources.displayMetrics.density).toInt()
+
+    /** Variantes accentuées de la lettre affichée par la touche, ou null si aucune. */
+    private fun variantsFor(button: Button): List<Char>? {
+        val text = button.text?.toString() ?: return null
+        if (text.length != 1) return null
+        return ACCENT_VARIANTS[text[0].lowercaseChar()]
+    }
+
+    /**
+     * Gestion tactile des touches lettres : écrit au relâchement (tap), et sur appui long
+     * affiche le popup de variantes accentuées que l'on sélectionne en glissant le doigt.
+     */
+    private fun Button.attachLetterKey() {
+        val key = this
+        var longPressRunnable: Runnable? = null
+
+        setOnTouchListener { v, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    if (correctionInProgress) return@setOnTouchListener true
+                    v.isPressed = true
+                    val variants = variantsFor(key)
+                    if (variants != null) {
+                        val r = Runnable {
+                            longPressRunnable = null
+                            showAccentPopup(key, variants)
+                        }
+                        longPressRunnable = r
+                        mainHandler.postDelayed(r, LONG_PRESS_MS)
+                    }
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    if (accentPopupShowing) updateAccentHighlight(event.rawX, event.rawY)
+                    true
+                }
+                MotionEvent.ACTION_UP -> {
+                    v.isPressed = false
+                    longPressRunnable?.let { mainHandler.removeCallbacks(it) }
+                    longPressRunnable = null
+                    if (accentPopupShowing) {
+                        commitHighlightedAccent(event.rawX, event.rawY)
+                        dismissAccentPopup()
+                    } else {
+                        commit(key.text.toString())
+                    }
+                    true
+                }
+                MotionEvent.ACTION_CANCEL -> {
+                    v.isPressed = false
+                    longPressRunnable?.let { mainHandler.removeCallbacks(it) }
+                    longPressRunnable = null
+                    dismissAccentPopup()
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+
+    private fun showAccentPopup(key: Button, variants: List<Char>) {
+        if (correctionInProgress) return
+        val anchor = inputView ?: return
+        dismissAccentPopup()
+
+        val upper = shiftState != ShiftState.OFF
+        val chipW = dp(POPUP_CHIP_WIDTH_DP)
+        val chipH = dp(POPUP_CHIP_HEIGHT_DP)
+        val margin = dp(POPUP_CHIP_MARGIN_DP)
+        val pad = dp(POPUP_PADDING_DP)
+
+        val container = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(pad, pad, pad, pad)
+            background = ContextCompat.getDrawable(this@CorrectKeyboardService, R.drawable.key_bg)
+            backgroundTintList = ColorStateList.valueOf(
+                ContextCompat.getColor(this@CorrectKeyboardService, R.color.key_surface_wide))
+        }
+        val chips = variants.map { ch ->
+            TextView(this).apply {
+                text = if (upper) ch.toString().uppercase() else ch.toString()
+                textSize = 22f
+                gravity = Gravity.CENTER
+                setTextColor(ContextCompat.getColor(this@CorrectKeyboardService, R.color.key_text))
+                background = ContextCompat.getDrawable(this@CorrectKeyboardService, R.drawable.key_bg)
+                val lp = LinearLayout.LayoutParams(chipW, chipH).apply { setMargins(margin, 0, margin, 0) }
+                container.addView(this, lp)
+            }
+        }
+
+        accentChips = chips
+        accentVariants = variants
+        accentHighlightIndex = 0
+        accentPopupShowing = true
+
+        val popupW = chips.size * (chipW + 2 * margin) + 2 * pad
+        val popupH = chipH + 2 * pad
+
+        val popup = PopupWindow(container, popupW, popupH, false).apply {
+            isClippingEnabled = false
+            isTouchable = false   // la touche d'origine garde le grab tactile
+            isFocusable = false
+            isOutsideTouchable = false
+            setBackgroundDrawable(null)
+        }
+        accentPopup = popup
+
+        val keyLoc = IntArray(2)
+        key.getLocationOnScreen(keyLoc)
+        val keyCenterX = keyLoc[0] + key.width / 2
+        // Centrer la chip[0] (le défaut) sur le centre de la touche.
+        val chip0CenterOffset = pad + margin + chipW / 2
+        val screenW = if (anchor.width > 0) anchor.width else resources.displayMetrics.widthPixels
+        val x = (keyCenterX - chip0CenterOffset).coerceIn(0, (screenW - popupW).coerceAtLeast(0))
+        val y = keyLoc[1] - popupH - dp(POPUP_GAP_ABOVE_KEY_DP)
+
+        highlightChip(0)
+        try {
+            popup.showAtLocation(anchor, Gravity.NO_GRAVITY, x, y)
+        } catch (_: Throwable) {
+            dismissAccentPopup()
+        }
+    }
+
+    /** Index de la chip sous la position écran donnée, ou null si en dehors horizontalement. */
+    private fun chipIndexAt(rawX: Float): Int? {
+        val loc = IntArray(2)
+        for ((i, chip) in accentChips.withIndex()) {
+            chip.getLocationOnScreen(loc)
+            if (rawX >= loc[0] && rawX < loc[0] + chip.width) return i
+        }
+        return null
+    }
+
+    private fun updateAccentHighlight(rawX: Float, rawY: Float) {
+        val idx = chipIndexAt(rawX) ?: return
+        if (idx != accentHighlightIndex) {
+            accentHighlightIndex = idx
+            highlightChip(idx)
+        }
+    }
+
+    private fun highlightChip(index: Int) {
+        accentChips.forEachIndexed { i, chip ->
+            val active = i == index
+            chip.backgroundTintList = ColorStateList.valueOf(
+                ContextCompat.getColor(this, if (active) R.color.key_accent_active else R.color.key_surface))
+            chip.setTextColor(ContextCompat.getColor(this, if (active) R.color.white else R.color.key_text))
+        }
+    }
+
+    private fun commitHighlightedAccent(rawX: Float, rawY: Float) {
+        if (accentVariants.isEmpty()) return
+        val hit = chipIndexAt(rawX)
+        // Relâché clairement sous la barre (≥ 1 hauteur de chip dessous) : on n'écrit rien.
+        val first = accentChips.firstOrNull()
+        val belowStrip = if (first != null) {
+            val loc = IntArray(2)
+            first.getLocationOnScreen(loc)
+            rawY > loc[1] + first.height + dp(POPUP_CHIP_HEIGHT_DP)
+        } else false
+        when {
+            hit != null -> commit(accentVariants[hit].toString())
+            belowStrip -> { /* hors zone : rien */ }
+            else -> commit(accentVariants[accentHighlightIndex].toString()) // défaut (é)
+        }
+    }
+
+    private fun dismissAccentPopup() {
+        accentPopupShowing = false
+        accentChips = emptyList()
+        accentVariants = emptyList()
+        accentHighlightIndex = 0
+        accentPopup?.let { p ->
+            if (p.isShowing) {
+                try { p.dismiss() } catch (_: Throwable) {}
+            }
+        }
+        accentPopup = null
     }
 
     private fun toggleEmojiPanel(root: View) {
@@ -370,11 +565,37 @@ class CorrectKeyboardService : InputMethodService() {
     private fun sendEnter() {
         if (correctionInProgress) return
         val ic = currentInputConnection ?: return
+
+        val editorInfo = currentInputEditorInfo
+        // Sur un champ mono-ligne avec une action (Envoyer, Rechercher, OK…),
+        // Entrée déclenche cette action plutôt que d'insérer un retour à la ligne.
+        if (editorInfo != null && !isMultiLineField(editorInfo)) {
+            val imeOptions = editorInfo.imeOptions
+            val action = imeOptions and EditorInfo.IME_MASK_ACTION
+            val noEnterAction = (imeOptions and EditorInfo.IME_FLAG_NO_ENTER_ACTION) != 0
+            if (!noEnterAction &&
+                action != EditorInfo.IME_ACTION_NONE &&
+                action != EditorInfo.IME_ACTION_UNSPECIFIED) {
+                ic.performEditorAction(action)
+                return
+            }
+        }
         ic.commitText("\n", 1)
+    }
+
+    /** Vrai si le champ accepte plusieurs lignes (zone de texte type note/message). */
+    private fun isMultiLineField(editorInfo: EditorInfo): Boolean {
+        val inputType = editorInfo.inputType
+        if ((inputType and InputType.TYPE_MASK_CLASS) != InputType.TYPE_CLASS_TEXT) return false
+        val variation = inputType and InputType.TYPE_MASK_VARIATION
+        return (inputType and InputType.TYPE_TEXT_FLAG_MULTI_LINE) != 0 ||
+            (inputType and InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE) != 0 ||
+            variation == InputType.TYPE_TEXT_VARIATION_LONG_MESSAGE
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
+        dismissAccentPopup()
         val newNight = newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK
         val newLanguage = newConfig.locales[0].language
         if ((newNight != lastUiMode || newLanguage != lastLanguage) && inputView != null) {
@@ -384,6 +605,7 @@ class CorrectKeyboardService : InputMethodService() {
 
     override fun onStartInputView(info: EditorInfo?, restarting: Boolean) {
         super.onStartInputView(info, restarting)
+        dismissAccentPopup()
         inputView?.let { view ->
             showSymbolsPanel(view, false)
             view.findViewById<View>(R.id.emojiPanel).visibility = View.GONE
@@ -392,6 +614,16 @@ class CorrectKeyboardService : InputMethodService() {
         }
         lastOriginalText = null
         updateUndoEnabled()
+    }
+
+    override fun onFinishInputView(finishingInput: Boolean) {
+        dismissAccentPopup()
+        super.onFinishInputView(finishingInput)
+    }
+
+    override fun onDestroy() {
+        dismissAccentPopup()
+        super.onDestroy()
     }
 
     private fun applyNavigationBarInset(root: View) {
@@ -452,7 +684,7 @@ class CorrectKeyboardService : InputMethodService() {
             MODE_SERVER -> {
                 val token = EncryptedKeyStore.getServerToken(this)
                 if (token.isEmpty()) {
-                    Toast.makeText(this, getString(R.string.toast_no_server_token), Toast.LENGTH_SHORT).show()
+                    showMissingTokenDialog()
                     return
                 }
                 CorrectionCredentials.Server(token)
@@ -502,6 +734,7 @@ class CorrectKeyboardService : InputMethodService() {
     }
 
     private fun launchCorrection(original: String, credentials: CorrectionCredentials, language: String) {
+        dismissAccentPopup()
         correctionInProgress = true
         pendingResult = null
         correctionOriginal = original
@@ -570,6 +803,42 @@ class CorrectKeyboardService : InputMethodService() {
                  trimmed.endsWith("a écrit:", ignoreCase = true))) return true
         }
         return false
+    }
+
+    private fun showMissingTokenDialog() {
+        val token = inputView?.windowToken ?: run {
+            // Fallback rare : on n'a pas de windowToken pour attacher le dialog
+            // (ex. clavier détaché). On retombe sur le toast pour ne rien perdre.
+            Toast.makeText(this, getString(R.string.toast_no_server_token), Toast.LENGTH_LONG).show()
+            return
+        }
+        val content = layoutInflater.inflate(R.layout.dialog_missing_token, null)
+        val dialog = AlertDialog.Builder(this)
+            .setView(content)
+            .setPositiveButton(R.string.dialog_open_website) { _, _ ->
+                openAiCorrectWebsite()
+            }
+            .setNegativeButton(R.string.dialog_close, null)
+            .create()
+        val window = dialog.window ?: return
+        val lp = window.attributes
+        lp.token = token
+        lp.type = WindowManager.LayoutParams.TYPE_APPLICATION_ATTACHED_DIALOG
+        window.attributes = lp
+        dialog.show()
+    }
+
+    private fun openAiCorrectWebsite() {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://aicorrect.app")).apply {
+                // Obligatoire : on lance un Activity depuis un Service (pas de back-stack).
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            startActivity(intent)
+        } catch (_: Throwable) {
+            // Pas de navigateur installé / activity non résolue
+            Toast.makeText(this, "https://aicorrect.app", Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun showLongTextWarning(onContinue: () -> Unit) {
@@ -750,7 +1019,25 @@ class CorrectKeyboardService : InputMethodService() {
         private const val REPEAT_INTERVAL_MS = 50L
         private const val ANIM_PASS_DURATION_MS = 700L
         private const val NAV_BAR_FALLBACK_DP = 48f
-        private const val WAVE_CORNER_RADIUS_DP = 3f
+        private const val WAVE_CORNER_RADIUS_DP = 24f
+        private const val LONG_PRESS_MS = 300L
+        private const val POPUP_CHIP_WIDTH_DP = 44f
+        private const val POPUP_CHIP_HEIGHT_DP = 48f
+        private const val POPUP_CHIP_MARGIN_DP = 2f
+        private const val POPUP_PADDING_DP = 2f
+        private const val POPUP_GAP_ABOVE_KEY_DP = 6f
+
+        /** Variantes accentuées par lettre de base (minuscule) ; 1ʳᵉ = défaut au relâchement. */
+        private val ACCENT_VARIANTS: Map<Char, List<Char>> = mapOf(
+            'e' to listOf('é', 'è', 'ê', 'ë'),
+            'a' to listOf('à', 'â', 'æ', 'ä', 'á'),
+            'i' to listOf('î', 'ï', 'í', 'ì'),
+            'o' to listOf('ô', 'ö', 'œ', 'ó', 'ò'),
+            'u' to listOf('ù', 'û', 'ü', 'ú'),
+            'c' to listOf('ç'),
+            'n' to listOf('ñ'),
+            'y' to listOf('ÿ'),
+        )
         private data class EmojiCategory(val icon: String, val emojis: List<String>)
 
         private val EMOJI_CATEGORIES = listOf(

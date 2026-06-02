@@ -27,10 +27,13 @@
     <string name="section_direct">Configuration mode direct</string>
     <string name="section_server">Configuration mode serveur</string>
     <string name="toast_no_server_token">Aucun token AiCorrect configuré</string>
+    <string name="dialog_missing_token_message">Pour utiliser le mode serveur, inscrivez-vous sur https://aicorrect.app puis générez un token API depuis votre tableau de bord et collez-le dans les paramètres du clavier.</string>
+    <string name="dialog_open_website">Ouvrir le site</string>
+    <string name="dialog_close">Fermer</string>
     <string name="toast_no_api_key">Aucune clé API configurée</string>
     <string name="toast_correcting">Correction en cours…</string>
     <string name="toast_correction_failed">Échec de la correction</string>
-    <string name="key_symbols_toggle">\?123</string>
+    <string name="key_symbols_toggle">!#1</string>
     <string name="key_letters_toggle">ABC</string>
     <string name="btn_test_connection">Tester la connexion</string>
     <string name="btn_test_connection_in_progress">Test en cours…</string>

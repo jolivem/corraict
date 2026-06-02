@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Touche jointive : la cible tactile remplit toute la cellule (marge 0) ;
+     le ripple coloré est dessiné 2dp à l'intérieur pour garder l'écart visuel. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/key_bg"
+    android:insetLeft="2dp"
+    android:insetTop="2dp"
+    android:insetRight="2dp"
+    android:insetBottom="2dp" />
