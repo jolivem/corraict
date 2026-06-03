@@ -73,7 +73,26 @@ class CorrectKeyboardService : InputMethodService() {
     private var accentHighlightIndex = 0
     private var accentPopupShowing = false
 
+    private val completionEngine = WordCompletionEngine()
+    private var suggestionStrip: View? = null
+    private var suggestionButtons: List<Button> = emptyList()
+    private var completionEnabled = true
+
     private data class PendingResult(val text: String, val errorMsg: String?)
+
+    override fun onCreate() {
+        super.onCreate()
+        completionEnabled = getPreferences().getBoolean(KEY_COMPLETION, true)
+        // Chargement du dictionnaire hors du thread principal.
+        val assetPath = dictAssetForLanguage()
+        Thread { completionEngine.load(applicationContext, assetPath) }.start()
+    }
+
+    /** Asset du dictionnaire selon la langue (même logique que la disposition clavier). */
+    private fun dictAssetForLanguage(): String = when (systemLanguage()) {
+        "fr" -> "dict/fr.txt"
+        else -> "dict/fr.txt" // FR par défaut ; prévu pour ajouter dict/en.txt plus tard
+    }
 
     override fun onCreateInputView(): View {
         lastUiMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
@@ -111,6 +130,15 @@ class CorrectKeyboardService : InputMethodService() {
 
         view.findViewById<Button>(R.id.keySymbolsToggle).setOnClickListener { showSymbolsPanel(view, true) }
         view.findViewById<Button>(R.id.keyLettersToggle).setOnClickListener { showSymbolsPanel(view, false) }
+
+        suggestionStrip = view.findViewById(R.id.suggestionStrip)
+        suggestionButtons = listOf(
+            view.findViewById(R.id.suggestion0),
+            view.findViewById(R.id.suggestion1),
+            view.findViewById(R.id.suggestion2),
+        )
+        suggestionButtons.forEachIndexed { i, btn -> btn.setOnClickListener { onSuggestionTapped(i) } }
+        clearSuggestions()
 
         inputView = view
         return view
@@ -499,6 +527,71 @@ class CorrectKeyboardService : InputMethodService() {
             refreshShiftVisual()
             refreshLetterCase()
         }
+        refreshSuggestions()
+    }
+
+    // ===================== Complétion de mots =====================
+
+    /** Le mot en cours de frappe : les lettres juste avant le curseur. */
+    private fun currentWord(): String {
+        val ic = currentInputConnection ?: return ""
+        val before = ic.getTextBeforeCursor(64, 0)?.toString() ?: return ""
+        var i = before.length
+        while (i > 0 && before[i - 1].isLetter()) i--
+        return before.substring(i)
+    }
+
+    /** Met la 1ʳᵉ lettre en majuscule si le morceau tapé l'est, ou si Shift est actif. */
+    private fun applyCase(word: String, partial: String): String {
+        if (word.isEmpty()) return word
+        val cap = (partial.isNotEmpty() && partial[0].isUpperCase()) || shiftState != ShiftState.OFF
+        return if (cap) word[0].uppercaseChar() + word.substring(1) else word
+    }
+
+    /** Recalcule et affiche les suggestions pour le mot en cours. */
+    private fun refreshSuggestions() {
+        if (!completionEnabled || correctionInProgress) { clearSuggestions(); return }
+        if (suggestionButtons.isEmpty()) return
+        val word = currentWord()
+        if (word.isEmpty()) { clearSuggestions(); return }
+        val results = completionEngine.suggest(word, suggestionButtons.size)
+        if (results.isEmpty()) { clearSuggestions(); return }
+        suggestionButtons.forEachIndexed { i, btn ->
+            val r = results.getOrNull(i)
+            if (r != null) {
+                btn.text = applyCase(r, word)
+                btn.visibility = View.VISIBLE
+            } else {
+                btn.text = ""
+                btn.visibility = View.INVISIBLE // garde la colonne pour des positions stables
+            }
+        }
+        suggestionStrip?.visibility = View.VISIBLE
+    }
+
+    private fun clearSuggestions() {
+        suggestionStrip?.visibility = View.GONE
+        suggestionButtons.forEach { it.text = "" }
+    }
+
+    /** Remplace le morceau tapé par le mot complet + une espace. */
+    private fun onSuggestionTapped(index: Int) {
+        if (correctionInProgress) return
+        val ic = currentInputConnection ?: return
+        val word = currentWord()
+        if (word.isEmpty()) return
+        val full = suggestionButtons.getOrNull(index)?.text?.toString().orEmpty()
+        if (full.isEmpty()) return
+        ic.beginBatchEdit()
+        ic.deleteSurroundingText(word.length, 0) // efface le morceau déjà inséré
+        ic.commitText("$full ", 1)
+        ic.endBatchEdit()
+        if (shiftState == ShiftState.ONE_SHOT) {
+            shiftState = ShiftState.OFF
+            refreshShiftVisual()
+            refreshLetterCase()
+        }
+        clearSuggestions()
     }
 
     private fun onShiftClick() {
@@ -560,6 +653,7 @@ class CorrectKeyboardService : InputMethodService() {
         } else {
             ic.deleteSurroundingText(1, 0)
         }
+        refreshSuggestions()
     }
 
     private fun sendEnter() {
@@ -614,10 +708,13 @@ class CorrectKeyboardService : InputMethodService() {
         }
         lastOriginalText = null
         updateUndoEnabled()
+        completionEnabled = getPreferences().getBoolean(KEY_COMPLETION, true)
+        clearSuggestions()
     }
 
     override fun onFinishInputView(finishingInput: Boolean) {
         dismissAccentPopup()
+        clearSuggestions()
         super.onFinishInputView(finishingInput)
     }
 
@@ -736,6 +833,7 @@ class CorrectKeyboardService : InputMethodService() {
     private fun launchCorrection(original: String, credentials: CorrectionCredentials, language: String) {
         dismissAccentPopup()
         correctionInProgress = true
+        clearSuggestions()
         pendingResult = null
         correctionOriginal = original
         lastOriginalText = null
@@ -883,6 +981,7 @@ class CorrectKeyboardService : InputMethodService() {
         }
         correctionOriginal = null
         updateUndoEnabled()
+        refreshSuggestions()
         result.errorMsg?.let { err ->
             Toast.makeText(
                 this,
@@ -999,6 +1098,7 @@ class CorrectKeyboardService : InputMethodService() {
     companion object {
         private const val PREFS_NAME = "ime_prefs"
         private const val KEY_AUTO_CORRECT = "auto_correct"
+        private const val KEY_COMPLETION = "word_completion"
         private const val KEY_LANGUAGE = "language"
         private const val KEY_API_KEY = "api_key"
         private const val KEY_MODEL = "model"

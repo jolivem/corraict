@@ -21,6 +21,7 @@ import com.google.android.material.textfield.TextInputEditText
 class SettingsActivity : AppCompatActivity() {
 
     private lateinit var switchAutoCorrect: SwitchMaterial
+    private lateinit var switchCompletion: SwitchMaterial
     private lateinit var spinnerLanguage: Spinner
     private lateinit var spinnerMode: Spinner
     private lateinit var sectionDirect: LinearLayout
@@ -50,6 +51,7 @@ class SettingsActivity : AppCompatActivity() {
         supportActionBar?.title = getString(R.string.settings_title)
 
         switchAutoCorrect = findViewById(R.id.switchAutoCorrect)
+        switchCompletion = findViewById(R.id.switchCompletion)
         spinnerLanguage = findViewById(R.id.spinnerLanguage)
         spinnerMode = findViewById(R.id.spinnerMode)
         sectionDirect = findViewById(R.id.sectionDirect)
@@ -80,6 +82,7 @@ class SettingsActivity : AppCompatActivity() {
 
         val prefs = getPreferences()
         switchAutoCorrect.isChecked = prefs.getBoolean(KEY_AUTO_CORRECT, true)
+        switchCompletion.isChecked = prefs.getBoolean(KEY_COMPLETION, true)
 
         val savedLanguage = prefs.getString(KEY_LANGUAGE, DEFAULT_LANGUAGE) ?: DEFAULT_LANGUAGE
         spinnerLanguage.setSelection(languageCodes.indexOf(savedLanguage).coerceAtLeast(0))
@@ -108,6 +111,7 @@ class SettingsActivity : AppCompatActivity() {
             val modeValue = modeCodes[spinnerMode.selectedItemPosition]
             prefs.edit()
                 .putBoolean(KEY_AUTO_CORRECT, switchAutoCorrect.isChecked)
+                .putBoolean(KEY_COMPLETION, switchCompletion.isChecked)
                 .putString(KEY_LANGUAGE, languageCodes[spinnerLanguage.selectedItemPosition])
                 .putString(KEY_MODE, modeValue)
                 .putString(KEY_MODEL, modelValue)
@@ -181,6 +185,7 @@ class SettingsActivity : AppCompatActivity() {
     companion object {
         const val PREFS_NAME = "ime_prefs"
         const val KEY_AUTO_CORRECT = "auto_correct"
+        const val KEY_COMPLETION = "word_completion"
         const val KEY_LANGUAGE = "language"
         const val KEY_MODE = "mode"
         const val KEY_MODEL = "model"
