@@ -24,8 +24,12 @@ export function GET() {
     '',
     '## Liens',
     `- Site web : ${base}`,
+    `- À propos (français) : ${base}/fr/about`,
     `- FAQ (français) : ${base}/fr/faq`,
     `- FAQ (anglais) : ${base}/en/faq`,
+    '',
+    '## À propos',
+    "Plume a été créée par Eloïse, 18 ans et dyslexique depuis l'école primaire, avec son père, développeur informatique depuis plus de 30 ans. Eloïse contactait des entrepreneurs sur WhatsApp depuis son téléphone et passait par ChatGPT pour corriger ses messages (un détour long et pénible) ; Plume est née pour corriger les fautes par IA directement depuis le clavier, sans changer le style, là où l'on écrit.",
     '',
     '## FAQ',
     ...faq.flatMap((category) => [

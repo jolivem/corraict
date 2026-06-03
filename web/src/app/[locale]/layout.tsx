@@ -52,6 +52,12 @@ export default async function LocaleLayout({
           </Link>
           <nav className="flex items-center gap-2 sm:gap-4">
             <Link
+              href="/about"
+              className="text-sm font-medium text-ink hover:text-ink-strong"
+            >
+              {t('about')}
+            </Link>
+            <Link
               href="/faq"
               className="text-sm font-medium text-ink hover:text-ink-strong"
             >

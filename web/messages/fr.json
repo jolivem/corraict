@@ -5,6 +5,7 @@
     "ctaLogin": "Connexion",
     "ctaTryFree": "Essayer 2 mois gratuits",
     "faq": "FAQ",
+    "about": "À propos",
     "loading": "Chargement…",
     "logout": "Se déconnecter",
     "cancel": "Annuler",
@@ -21,6 +22,7 @@
   "Footer": {
     "rights": "Tous droits réservés.",
     "faq": "FAQ",
+    "about": "À propos",
     "legal": "Mentions légales",
     "privacy": "Politique de confidentialité",
     "terms": "Conditions d'utilisation"
@@ -42,6 +44,23 @@
     "metaDescription": "Réponses aux questions fréquentes sur Plume : fonctionnement, dyslexie, vie privée, prix, compatibilité et comparaisons (Scribens, Grammarly, ChatGPT, Gboard).",
     "ctaTitle": "Encore une question ?",
     "ctaBody": "Essayez Plume gratuitement et voyez par vous-même."
+  },
+  "About": {
+    "title": "À propos de Plume",
+    "subtitle": "L'histoire de Plume, racontée par sa fondatrice.",
+    "metaTitle": "À propos — Plume, un clavier né d'un besoin de dyslexique",
+    "metaDescription": "L'histoire de Plume : Eloïse, 18 ans et dyslexique, et son père développeur depuis plus de 30 ans, ont créé un clavier Android qui corrige les fautes par IA, directement là où l'on écrit.",
+    "intro": "Je m'appelle Eloïse, j'ai 18 ans, et je suis dyslexique. Plume est née de mon propre besoin : écrire sans fautes, simplement, depuis mon téléphone.",
+    "s1Title": "Dyslexique et déterminée à entreprendre",
+    "s1Body": "Je suis diagnostiquée dyslexique depuis l'école primaire, vers le CE1. Et depuis toujours, je veux entreprendre. J'ai déjà créé plusieurs sites qui n'ont pas marché, mais je n'ai jamais lâché l'idée de construire quelque chose à moi.",
+    "s2Title": "Le détour par ChatGPT, jusqu'à en perdre patience",
+    "s2Body": "En me lançant, j'ai commencé à contacter des entrepreneurs sur WhatsApp et d'autres réseaux, depuis mon téléphone. Mais je ne voulais surtout pas envoyer des messages pleins de fautes. Alors je faisais un détour : j'écrivais mon message dans ChatGPT, je lui demandais de le corriger, je copiais le résultat, puis je le collais dans WhatsApp. Un processus long et pénible, qui a fini par me casser les nerfs.",
+    "s3Title": "Le déclic, avec mon père développeur",
+    "s3Body": "J'en ai parlé à mon père, développeur informatique depuis plus de 30 ans, qui crée aussi des sites à côté depuis des années. Il m'a dit que c'était une super idée : faire une application qui corrige les messages directement depuis le clavier, grâce à l'IA, pour que ce soit bien plus performant qu'un correcteur classique.",
+    "s4Title": "La naissance de Plume",
+    "s4Body": "C'est comme ça qu'est née Plume : en réunissant mon problème de dyslexique, mon envie d'entreprendre, et l'expertise de mon père. Aujourd'hui, Plume aide à écrire sans fautes, sans changer son style, directement là où l'on écrit.",
+    "ctaTitle": "Envie d'essayer ?",
+    "ctaBody": "Plume corrige vos messages en un appui, sans changer votre style."
   },
   "Login": {
     "title": "Connexion à votre compte",

@@ -9,6 +9,9 @@ export function SiteFooter({ appName }: { appName: string }) {
     <footer className="border-t border-line py-8">
       <div className="mx-auto max-w-5xl px-6 text-center text-sm text-muted">
         <nav className="flex flex-wrap justify-center gap-4">
+          <Link href="/about" className="hover:text-ink">
+            {t('about')}
+          </Link>
           <Link href="/faq" className="hover:text-ink">
             {t('faq')}
           </Link>

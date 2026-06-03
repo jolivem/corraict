@@ -7,6 +7,7 @@ import { siteUrl } from '@/lib/site';
 const ROUTES: { path: string; priority: number }[] = [
   { path: '', priority: 1 },
   { path: '/faq', priority: 0.8 },
+  { path: '/about', priority: 0.7 },
   { path: '/legal/privacy', priority: 0.3 },
   { path: '/legal/terms', priority: 0.3 },
   { path: '/legal/imprint', priority: 0.3 },

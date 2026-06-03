@@ -76,6 +76,7 @@ class CorrectKeyboardService : InputMethodService() {
     private val completionEngine = WordCompletionEngine()
     private var suggestionStrip: View? = null
     private var suggestionButtons: List<Button> = emptyList()
+    private var suggestionDividers: List<View> = emptyList()
     private var completionEnabled = true
 
     private data class PendingResult(val text: String, val errorMsg: String?)
@@ -136,6 +137,10 @@ class CorrectKeyboardService : InputMethodService() {
             view.findViewById(R.id.suggestion0),
             view.findViewById(R.id.suggestion1),
             view.findViewById(R.id.suggestion2),
+        )
+        suggestionDividers = listOf(
+            view.findViewById(R.id.suggestionDivider1),
+            view.findViewById(R.id.suggestionDivider2),
         )
         suggestionButtons.forEachIndexed { i, btn -> btn.setOnClickListener { onSuggestionTapped(i) } }
         clearSuggestions()
@@ -548,30 +553,31 @@ class CorrectKeyboardService : InputMethodService() {
         return if (cap) word[0].uppercaseChar() + word.substring(1) else word
     }
 
-    /** Recalcule et affiche les suggestions pour le mot en cours. */
+    /**
+     * Recalcule et affiche les suggestions pour le mot en cours. Ne touche JAMAIS
+     * à la visibilité de la barre (gérée uniquement par le réglage, dans
+     * onStartInputView) : la hauteur du clavier reste donc constante.
+     */
     private fun refreshSuggestions() {
         if (!completionEnabled || correctionInProgress) { clearSuggestions(); return }
         if (suggestionButtons.isEmpty()) return
         val word = currentWord()
         if (word.isEmpty()) { clearSuggestions(); return }
         val results = completionEngine.suggest(word, suggestionButtons.size)
-        if (results.isEmpty()) { clearSuggestions(); return }
         suggestionButtons.forEachIndexed { i, btn ->
             val r = results.getOrNull(i)
-            if (r != null) {
-                btn.text = applyCase(r, word)
-                btn.visibility = View.VISIBLE
-            } else {
-                btn.text = ""
-                btn.visibility = View.INVISIBLE // garde la colonne pour des positions stables
-            }
+            btn.text = if (r != null) applyCase(r, word) else ""
         }
-        suggestionStrip?.visibility = View.VISIBLE
+        // Un séparateur n'est visible que s'il y a un mot à sa droite.
+        suggestionDividers.forEachIndexed { i, divider ->
+            divider.visibility = if (results.size > i + 1) View.VISIBLE else View.INVISIBLE
+        }
     }
 
+    /** Vide les suggestions sans masquer la barre (hauteur stable). */
     private fun clearSuggestions() {
-        suggestionStrip?.visibility = View.GONE
         suggestionButtons.forEach { it.text = "" }
+        suggestionDividers.forEach { it.visibility = View.INVISIBLE }
     }
 
     /** Remplace le morceau tapé par le mot complet + une espace. */
@@ -709,6 +715,9 @@ class CorrectKeyboardService : InputMethodService() {
         lastOriginalText = null
         updateUndoEnabled()
         completionEnabled = getPreferences().getBoolean(KEY_COMPLETION, true)
+        // Seul endroit qui change la visibilité de la barre (changement statique
+        // à l'ouverture du champ, jamais pendant la frappe).
+        suggestionStrip?.visibility = if (completionEnabled) View.VISIBLE else View.GONE
         clearSuggestions()
     }
 

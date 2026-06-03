@@ -5,6 +5,7 @@
     "ctaLogin": "Sign in",
     "ctaTryFree": "Try 2 months free",
     "faq": "FAQ",
+    "about": "About",
     "loading": "Loading…",
     "logout": "Sign out",
     "cancel": "Cancel",
@@ -21,6 +22,7 @@
   "Footer": {
     "rights": "All rights reserved.",
     "faq": "FAQ",
+    "about": "About",
     "legal": "Legal notice",
     "privacy": "Privacy policy",
     "terms": "Terms of use"
@@ -42,6 +44,23 @@
     "metaDescription": "Answers to frequently asked questions about Plume: how it works, dyslexia, privacy, pricing, compatibility and comparisons (Scribens, Grammarly, ChatGPT, Gboard).",
     "ctaTitle": "Still have a question?",
     "ctaBody": "Try Plume for free and see for yourself."
+  },
+  "About": {
+    "title": "About Plume",
+    "subtitle": "The story of Plume, told by its founder.",
+    "metaTitle": "About — Plume, a keyboard born from a dyslexic's need",
+    "metaDescription": "The story of Plume: Eloïse, 18 and dyslexic, and her father, a developer for over 30 years, created an Android keyboard that fixes mistakes with AI, right where you write.",
+    "intro": "My name is Eloïse, I'm 18, and I'm dyslexic. Plume was born from my own need: to write without mistakes, simply, from my phone.",
+    "s1Title": "Dyslexic and determined to build",
+    "s1Body": "I've been diagnosed with dyslexia since primary school, around age seven. And I've always wanted to be an entrepreneur. I had already built several websites that didn't take off, but I never let go of the idea of building something of my own.",
+    "s2Title": "The ChatGPT detour, until it wore me out",
+    "s2Body": "As I got started, I began reaching out to entrepreneurs on WhatsApp and other networks, from my phone. But I really didn't want to send messages full of mistakes. So I took a detour: I wrote my message in ChatGPT, asked it to fix it, copied the result, then pasted it into WhatsApp. A long, painful process that eventually got on my nerves.",
+    "s3Title": "The spark, with my developer father",
+    "s3Body": "I talked about it with my father, an IT developer for over 30 years, who has also been building websites on the side for years. He told me it was a great idea: to make an app that fixes messages right from the keyboard, using AI, so it would be far more capable than a classic spell-checker.",
+    "s4Title": "How Plume was born",
+    "s4Body": "That's how Plume came to be: by bringing together my problem as a dyslexic, my drive to build a company, and my father's expertise. Today, Plume helps you write without mistakes, without changing your style, right where you write.",
+    "ctaTitle": "Want to try it?",
+    "ctaBody": "Plume fixes your messages in one tap, without changing your style."
   },
   "Login": {
     "title": "Sign in to your account",
