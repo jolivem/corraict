@@ -6,22 +6,25 @@ export function SiteFooter({ appName }: { appName: string }) {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-gray-200 bg-gray-50 py-8">
-      <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-6 text-sm text-gray-500">
-        <p>
-          © {year} {appName}. {t('rights')}
-        </p>
-        <nav className="flex flex-wrap gap-4">
-          <Link href="/legal/privacy" className="hover:text-gray-900">
+    <footer className="border-t border-line py-8">
+      <div className="mx-auto max-w-5xl px-6 text-center text-sm text-muted">
+        <nav className="flex flex-wrap justify-center gap-4">
+          <Link href="/faq" className="hover:text-ink">
+            {t('faq')}
+          </Link>
+          <Link href="/legal/privacy" className="hover:text-ink">
             {t('privacy')}
           </Link>
-          <Link href="/legal/terms" className="hover:text-gray-900">
+          <Link href="/legal/terms" className="hover:text-ink">
             {t('terms')}
           </Link>
-          <Link href="/legal/imprint" className="hover:text-gray-900">
+          <Link href="/legal/imprint" className="hover:text-ink">
             {t('legal')}
           </Link>
         </nav>
+        <p className="mt-3">
+          © {year} {appName}. {t('rights')}
+        </p>
       </div>
     </footer>
   );

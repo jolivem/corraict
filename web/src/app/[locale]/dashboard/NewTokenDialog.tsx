@@ -41,33 +41,33 @@ export function NewTokenDialog({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl"
+        className="w-full max-w-md rounded-2xl bg-surface p-6 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-lg font-semibold text-gray-900">{t('tokenCreatedTitle')}</h2>
-        <p className="mt-2 text-sm font-medium text-amber-700">{t('tokenCreatedWarning')}</p>
+        <h2 className="text-lg font-semibold text-ink">{t('tokenCreatedTitle')}</h2>
+        <p className="mt-2 text-sm font-medium text-danger">{t('tokenCreatedWarning')}</p>
 
         <div className="mt-4 flex flex-col items-center">
           {qrDataUrl ? (
             <img
               src={qrDataUrl}
               alt={t('tokenScanInstruction')}
-              className="rounded border border-gray-200"
+              className="rounded-lg border border-line"
               width={240}
               height={240}
             />
           ) : (
-            <div className="h-[240px] w-[240px] animate-pulse rounded bg-gray-100" />
+            <div className="h-[240px] w-[240px] animate-pulse rounded-lg bg-surface-muted" />
           )}
-          <p className="mt-2 text-xs text-gray-500">{t('tokenScanInstruction')}</p>
+          <p className="mt-2 text-xs text-muted">{t('tokenScanInstruction')}</p>
         </div>
 
-        <div className="mt-4 flex items-center gap-2 rounded border border-gray-200 bg-gray-50 p-2 font-mono text-xs">
+        <div className="mt-4 flex items-center gap-2 rounded-lg border border-line bg-surface-muted p-2 font-mono text-xs text-body">
           <code className="flex-1 truncate">{token.token}</code>
           <button
             type="button"
             onClick={copy}
-            className="rounded bg-white px-2 py-1 text-xs font-medium text-gray-700 ring-1 ring-gray-300 hover:bg-gray-100"
+            className="rounded bg-surface px-2 py-1 text-xs font-medium text-body ring-1 ring-line hover:bg-cream"
           >
             {copied ? tCommon('copied') : tCommon('copy')}
           </button>
@@ -77,7 +77,7 @@ export function NewTokenDialog({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
+            className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
           >
             {tCommon('close')}
           </button>

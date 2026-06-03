@@ -72,13 +72,13 @@ export default function LoginPage() {
 
   return (
     <div className="mx-auto flex max-w-md flex-col px-6 py-16">
-      <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
-      <p className="mt-2 text-sm text-gray-600">{t('subtitle')}</p>
+      <h1 className="text-2xl font-bold text-ink">{t('title')}</h1>
+      <p className="mt-2 text-sm text-muted">{t('subtitle')}</p>
 
       {step === 'request' ? (
         <form className="mt-8 flex flex-col gap-4" onSubmit={handleRequest}>
           <label className="flex flex-col gap-2">
-            <span className="text-sm font-medium text-gray-700">{t('emailLabel')}</span>
+            <span className="text-sm font-medium text-body">{t('emailLabel')}</span>
             <input
               type="email"
               required
@@ -87,10 +87,10 @@ export default function LoginPage() {
               value={email}
               placeholder={t('emailPlaceholder')}
               onChange={(e) => setEmail(e.target.value)}
-              className="rounded-md border border-gray-300 px-3 py-2 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="rounded-lg border border-line bg-white px-3 py-2 text-body focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
           </label>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-danger">{error}</p>}
           <button
             type="submit"
             disabled={pending}
@@ -98,7 +98,7 @@ export default function LoginPage() {
           >
             {pending ? tCommon('loading') : t('sendCode')}
           </button>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-muted">
             {t('consentPrefix')}{' '}
             <Link href="/legal/terms" className="text-brand-700 hover:underline">
               {tFooter('terms').toLowerCase()}
@@ -112,12 +112,12 @@ export default function LoginPage() {
         </form>
       ) : (
         <form className="mt-8 flex flex-col gap-4" onSubmit={handleVerify}>
-          <p className="text-sm text-gray-600">
-            <span className="font-medium text-gray-900">{email}</span>
+          <p className="text-sm text-muted">
+            <span className="font-medium text-ink">{email}</span>
           </p>
-          <p className="text-sm text-gray-500">{t('codeHint')}</p>
+          <p className="text-sm text-muted">{t('codeHint')}</p>
           <label className="flex flex-col gap-2">
-            <span className="text-sm font-medium text-gray-700">{t('codeLabel')}</span>
+            <span className="text-sm font-medium text-body">{t('codeLabel')}</span>
             <input
               type="text"
               inputMode="numeric"
@@ -128,10 +128,10 @@ export default function LoginPage() {
               value={code}
               placeholder={t('codePlaceholder')}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-              className="rounded-md border border-gray-300 px-3 py-2 text-lg tracking-widest focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="rounded-lg border border-line bg-white px-3 py-2 text-lg tracking-widest text-body focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
           </label>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-danger">{error}</p>}
           <button
             type="submit"
             disabled={pending}

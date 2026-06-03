@@ -54,37 +54,41 @@ export function DataSection() {
   }
 
   return (
-    <section className="rounded-xl border border-gray-200 bg-white p-6">
-      <h2 className="text-lg font-semibold text-gray-900">{t('dataTitle')}</h2>
-      <p className="mt-1 text-sm text-gray-600">{t('dataSubtitle')}</p>
+    <>
+      <section className="rounded-2xl border border-line bg-surface p-6">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">{t('dataTitle')}</h2>
+        <p className="mt-1 text-sm text-body">{t('dataSubtitle')}</p>
+        <button
+          type="button"
+          onClick={downloadExport}
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border border-line px-4 py-2.5 text-sm font-medium text-ink hover:bg-surface-muted sm:w-auto"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+            strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+            <path d="M12 4v11m0 0 4-4m-4 4-4-4M5 19h14" />
+          </svg>
+          {t('dataExportButton')}
+        </button>
+        {error && <p className="mt-3 text-sm text-danger">{error}</p>}
+      </section>
 
-      <div className="mt-6 grid gap-6 sm:grid-cols-2">
-        <div>
-          <h3 className="text-sm font-medium text-gray-900">{t('dataExportTitle')}</h3>
-          <p className="mt-1 text-sm text-gray-600">{t('dataExportDesc')}</p>
-          <button
-            type="button"
-            onClick={downloadExport}
-            className="mt-3 rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
-            {t('dataExportButton')}
-          </button>
-        </div>
-
-        <div>
-          <h3 className="text-sm font-medium text-red-700">{t('dataDeleteTitle')}</h3>
-          <p className="mt-1 text-sm text-gray-600">{t('dataDeleteDesc')}</p>
-          <button
-            type="button"
-            onClick={() => setShowConfirm(true)}
-            className="mt-3 rounded-md border border-red-300 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50"
-          >
-            {t('dataDeleteButton')}
-          </button>
-        </div>
-      </div>
-
-      {error && <p className="mt-4 text-sm text-amber-700">{error}</p>}
+      <section className="rounded-2xl border border-danger-line bg-danger-bg p-6">
+        <h3 className="flex items-center gap-2 text-base font-semibold text-danger">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+            strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+            <path d="M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14" />
+          </svg>
+          {t('dataDeleteTitle')}
+        </h3>
+        <p className="mt-1 text-sm text-body">{t('dataDeleteDesc')}</p>
+        <button
+          type="button"
+          onClick={() => setShowConfirm(true)}
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border border-danger-line px-4 py-2.5 text-sm font-medium text-danger hover:bg-white/50 sm:w-auto"
+        >
+          {t('dataDeleteButton')}
+        </button>
+      </section>
 
       {showConfirm && (
         <div
@@ -94,15 +98,15 @@ export function DataSection() {
           onClick={() => !pending && setShowConfirm(false)}
         >
           <div
-            className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl"
+            className="w-full max-w-md rounded-2xl bg-surface p-6 shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-semibold text-gray-900">{t('deleteConfirmTitle')}</h3>
-            <p className="mt-2 text-sm text-gray-700">
+            <h3 className="text-lg font-semibold text-ink">{t('deleteConfirmTitle')}</h3>
+            <p className="mt-2 text-sm text-body">
               {t('deleteConfirmBody', { phrase: confirmPhrase })}
             </p>
             <label className="mt-4 flex flex-col gap-1">
-              <span className="text-sm font-medium text-gray-700">
+              <span className="text-sm font-medium text-body">
                 {t('deleteConfirmInputLabel')}
               </span>
               <input
@@ -110,10 +114,11 @@ export function DataSection() {
                 value={confirmInput}
                 onChange={(e) => setConfirmInput(e.target.value)}
                 placeholder={confirmPhrase}
-                className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                className="rounded-lg border border-line bg-white px-3 py-2 text-sm text-body focus:border-danger focus:outline-none focus:ring-1 focus:ring-danger"
                 autoFocus
               />
             </label>
+            {error && <p className="mt-3 text-sm text-danger">{error}</p>}
             <div className="mt-6 flex justify-end gap-2">
               <button
                 type="button"
@@ -122,7 +127,7 @@ export function DataSection() {
                   setConfirmInput('');
                 }}
                 disabled={pending}
-                className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                className="rounded-lg border border-line px-3 py-1.5 text-sm font-medium text-body hover:bg-surface-muted disabled:opacity-50"
               >
                 {tCommon('cancel')}
               </button>
@@ -130,7 +135,7 @@ export function DataSection() {
                 type="button"
                 onClick={deleteAccount}
                 disabled={pending || !canConfirm}
-                className="rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-lg bg-danger px-3 py-1.5 text-sm font-medium text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {pending ? tCommon('loading') : t('deleteConfirmAction')}
               </button>
@@ -138,6 +143,6 @@ export function DataSection() {
           </div>
         </div>
       )}
-    </section>
+    </>
   );
 }

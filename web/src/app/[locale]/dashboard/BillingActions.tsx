@@ -107,11 +107,11 @@ export function BillingActions({
         type="button"
         disabled={pending}
         onClick={() => handleClick(hasSubscription ? 'portal' : 'checkout')}
-        className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
+        className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
       >
         {hasSubscription ? t('subscriptionManage') : t('subscriptionSubscribe')}
       </button>
-      {error && <p className="text-sm text-amber-700">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
       {pendingTerms && (
         <TermsAcceptDialog
           version={pendingTerms}

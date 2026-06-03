@@ -42,20 +42,29 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
-      <header className="border-b border-gray-200 bg-white">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-          <Link href="/" className="text-lg font-semibold text-gray-900 hover:text-brand-700">
+      <header className="border-b border-line bg-cream">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
+          <Link
+            href="/"
+            className="shrink-0 text-base font-semibold text-ink hover:text-ink-strong sm:text-lg"
+          >
             {t('appName')}
           </Link>
-          <div className="flex items-center gap-4">
+          <nav className="flex items-center gap-2 sm:gap-4">
+            <Link
+              href="/faq"
+              className="text-sm font-medium text-ink hover:text-ink-strong"
+            >
+              {t('faq')}
+            </Link>
             <LocaleSwitcher />
             <Link
               href="/login"
-              className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
+              className="whitespace-nowrap rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-700 sm:px-4 sm:py-2"
             >
               {t('ctaLogin')}
             </Link>
-          </div>
+          </nav>
         </div>
       </header>
 

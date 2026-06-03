@@ -7,6 +7,6 @@
     font-family: theme('fontFamily.sans');
   }
   body {
-    @apply bg-white text-gray-900 antialiased;
+    @apply bg-cream text-body antialiased;
   }
 }

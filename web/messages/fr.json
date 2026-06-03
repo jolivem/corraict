@@ -2,8 +2,9 @@
   "Common": {
     "appName": "AiCorrect",
     "tagline": "Correction orthographique et grammaticale par IA, partout sur Android.",
-    "ctaLogin": "Se connecter",
-    "ctaTryFree": "Essayer 7 jours gratuits",
+    "ctaLogin": "Connexion",
+    "ctaTryFree": "Essayer 2 mois gratuits",
+    "faq": "FAQ",
     "loading": "Chargement…",
     "logout": "Se déconnecter",
     "cancel": "Annuler",
@@ -19,6 +20,7 @@
   },
   "Footer": {
     "rights": "Tous droits réservés.",
+    "faq": "FAQ",
     "legal": "Mentions légales",
     "privacy": "Politique de confidentialité",
     "terms": "Conditions d'utilisation"
@@ -27,15 +29,23 @@
     "heroTitle": "Écrivez sans fautes,\nsans changer votre style.",
     "heroSubtitle": "Un clavier Android qui corrige vos messages, mails et notes en un appui. Aucune reformulation, juste l'orthographe et la grammaire.",
     "feature1Title": "Correction stricte",
-    "feature1Body": "Notre IA corrige uniquement les fautes — pas de reformulation, pas de changement de ton.",
+    "feature1Body": "Notre IA corrige uniquement les fautes : pas de reformulation, pas de changement de ton.",
     "feature2Title": "Partout sur Android",
     "feature2Body": "Notre clavier IME fonctionne dans n'importe quelle app : WhatsApp, Gmail, Slack, navigateur.",
     "feature3Title": "Respect de la vie privée",
     "feature3Body": "Vos textes ne sont jamais stockés. Seules des métriques anonymes sont conservées pour la facturation."
   },
+  "FAQ": {
+    "title": "Questions fréquentes",
+    "subtitle": "Tout ce qu'il faut savoir sur Plume, le clavier Android qui corrige vos fautes en un appui, sans changer votre style.",
+    "metaTitle": "FAQ Plume, le clavier correcteur Android",
+    "metaDescription": "Réponses aux questions fréquentes sur Plume : fonctionnement, dyslexie, vie privée, prix, compatibilité et comparaisons (Scribens, Grammarly, ChatGPT, Gboard).",
+    "ctaTitle": "Encore une question ?",
+    "ctaBody": "Essayez Plume gratuitement et voyez par vous-même."
+  },
   "Login": {
     "title": "Connexion à votre compte",
-    "subtitle": "Recevez un code à 6 chiffres par email — aucun mot de passe à retenir.",
+    "subtitle": "Recevez un code à 6 chiffres par email, aucun mot de passe à retenir.",
     "emailLabel": "Adresse email",
     "emailPlaceholder": "vous@exemple.fr",
     "sendCode": "Recevoir mon code",
@@ -58,7 +68,7 @@
     "usageCurrentMonth": "Ce mois-ci",
     "usageRequests": "{count, plural, =0 {0 correction} one {# correction} other {# corrections}}",
     "usageQuotaCount": "{used} / {quota} corrections",
-    "usageQuotaNearLimit": "Vous approchez de votre quota mensuel — pensez à passer au plan Pro.",
+    "usageQuotaNearLimit": "Vous approchez de votre quota mensuel, pensez à passer au plan Pro.",
     "usageWords": "{count, plural, =0 {0 mot} one {# mot} other {# mots}}",
     "usageHistory": "Historique",
     "usageEmpty": "Aucune correction enregistrée pour le moment.",
@@ -240,7 +250,7 @@
     "s1Title": "1. Service",
     "s1Body": "AiCorrect propose un service de correction orthographique et grammaticale par IA, accessible via une application Android et un tableau de bord web. Le service est fourni « tel quel » sans garantie de disponibilité absolue.",
     "s2Title": "2. Abonnement",
-    "s2Body": "L'abonnement Pro est facturé mensuellement via Stripe. Un essai gratuit de 7 jours est proposé aux nouveaux comptes. Aucune carte n'est débitée pendant la période d'essai.",
+    "s2Body": "L'abonnement Pro est facturé mensuellement via Stripe. Un essai gratuit de 2 mois est proposé aux nouveaux comptes. Aucune carte n'est débitée pendant la période d'essai.",
     "s3Title": "3. Résiliation",
     "s3Body": "Vous pouvez annuler à tout moment depuis le tableau de bord. L'accès est conservé jusqu'à la fin de la période payée. Aucun remboursement au prorata n'est effectué.",
     "s4Title": "4. Propriété et confidentialité",
@@ -253,7 +263,7 @@
   "Imprint": {
     "title": "Mentions légales",
     "publisherTitle": "Éditeur",
-    "publisherBody": "AiCorrect — [COMPAGNIE]\\nSiège social : [ADRESSE]\\nSIRET : [SIRET]\\nResponsable de la publication : [NOM]\\nContact : contact@aicorrect.app",
+    "publisherBody": "AiCorrect, [COMPAGNIE]\\nSiège social : [ADRESSE]\\nSIRET : [SIRET]\\nResponsable de la publication : [NOM]\\nContact : contact@aicorrect.app",
     "hostingTitle": "Hébergement",
     "hostingBody": "Site web et API hébergés par [HEBERGEUR] ([ADRESSE_HEBERGEUR]).",
     "ipTitle": "Propriété intellectuelle",

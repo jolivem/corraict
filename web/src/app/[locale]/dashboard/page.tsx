@@ -51,8 +51,8 @@ export default async function DashboardPage({
     <div className="mx-auto max-w-4xl space-y-8 px-6 py-12">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
-          <p className="mt-1 text-sm text-gray-600">{t('welcome', { email: me?.email ?? '' })}</p>
+          <h1 className="text-2xl font-bold text-ink">{t('title')}</h1>
+          <p className="mt-1 text-sm text-muted">{t('welcome', { email: me?.email ?? '' })}</p>
         </div>
         <div className="flex items-center gap-3">
           {isAdmin && (
@@ -100,26 +100,28 @@ export default async function DashboardPage({
     const nearLimit = quotaLimit !== null && pct >= 80;
 
     return (
-      <section className="rounded-xl border border-gray-200 bg-white p-6">
-        <h2 className="text-lg font-semibold text-gray-900">{t('usageTitle')}</h2>
+      <section className="rounded-2xl border border-line bg-surface p-6">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">{t('usageTitle')}</h2>
         {!current || (current.requests === 0 && history.length === 0) ? (
-          <p className="mt-4 text-sm text-gray-500">{t('usageEmpty')}</p>
+          <div className="mt-4 rounded-lg bg-surface-muted px-4 py-3 text-sm text-muted">
+            {t('usageEmpty')}
+          </div>
         ) : (
           <>
             <div className="mt-4">
-              <p className="text-xs uppercase tracking-wide text-gray-500">
+              <p className="text-xs uppercase tracking-wide text-muted">
                 {t('usageCurrentMonth')} · {formatMonth(current.yearMonth)}
               </p>
-              <p className="mt-1 text-2xl font-semibold text-gray-900">
+              <p className="mt-1 text-2xl font-semibold text-ink">
                 {quotaLimit
                   ? t('usageQuotaCount', { used, quota: quotaLimit })
                   : t('usageRequests', { count: current.requests })}
               </p>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-body">
                 {t('usageWords', { count: current.words })}
               </p>
               {quotaLimit && (
-                <div className="mt-3 h-2 w-full overflow-hidden rounded bg-gray-100">
+                <div className="mt-3 h-2 w-full overflow-hidden rounded bg-surface-muted">
                   <div
                     className={`h-full rounded ${nearLimit ? 'bg-amber-500' : 'bg-brand-500'}`}
                     style={{ width: `${pct}%` }}
@@ -132,22 +134,22 @@ export default async function DashboardPage({
             </div>
             {history.length > 1 && (
               <div className="mt-6">
-                <p className="mb-2 text-xs uppercase tracking-wide text-gray-500">
+                <p className="mb-2 text-xs uppercase tracking-wide text-muted">
                   {t('usageHistory')}
                 </p>
                 <ul className="space-y-2">
                   {[...history].reverse().map((m) => (
                     <li key={m.yearMonth} className="flex items-center gap-3">
-                      <span className="w-28 shrink-0 text-sm text-gray-600">
+                      <span className="w-28 shrink-0 text-sm text-muted">
                         {formatMonth(m.yearMonth)}
                       </span>
-                      <div className="h-2 flex-1 overflow-hidden rounded bg-gray-100">
+                      <div className="h-2 flex-1 overflow-hidden rounded bg-surface-muted">
                         <div
                           className="h-full rounded bg-brand-500"
                           style={{ width: `${Math.round((m.requests / maxRequests) * 100)}%` }}
                         />
                       </div>
-                      <span className="w-14 shrink-0 text-right text-sm tabular-nums text-gray-700">
+                      <span className="w-14 shrink-0 text-right text-sm tabular-nums text-body">
                         {m.requests}
                       </span>
                     </li>
@@ -182,16 +184,22 @@ export default async function DashboardPage({
     };
 
     return (
-      <section className="rounded-xl border border-gray-200 bg-white p-6">
-        <h2 className="text-lg font-semibold text-gray-900">{t('subscriptionTitle')}</h2>
+      <section className="rounded-2xl border border-line bg-surface p-6">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">{t('subscriptionTitle')}</h2>
         {!sub && isComplimentaryPro ? (
-          <div className="mt-4 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
-            <p className="font-medium">{t('subscriptionComplimentaryTitle')}</p>
-            <p className="mt-1 text-emerald-800">{t('subscriptionComplimentaryBody')}</p>
+          <div className="mt-3 rounded-lg border border-success/30 bg-success-bg px-4 py-3">
+            <p className="flex items-center gap-2 text-base font-semibold text-success">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+                strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                <path d="M4 12.5 9 17.5 20 6.5" />
+              </svg>
+              {t('subscriptionComplimentaryTitle')}
+            </p>
+            <p className="mt-1 text-sm text-success-text">{t('subscriptionComplimentaryBody')}</p>
           </div>
         ) : !sub ? (
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-gray-600">{t('subscriptionNone')}</p>
+            <p className="text-sm text-body">{t('subscriptionNone')}</p>
             <BillingActions
               hasSubscription={false}
               unavailableLabel={t('subscriptionUnavailable')}
@@ -199,17 +207,17 @@ export default async function DashboardPage({
           </div>
         ) : (
           <div className="mt-4 flex flex-wrap items-start justify-between gap-3">
-            <div className="text-sm text-gray-700">
+            <div className="text-sm text-body">
               <p>
-                <span className="text-gray-500">{t('subscriptionPlan')} : </span>
-                <span className="font-medium text-gray-900">{sub.plan}</span>
+                <span className="text-muted">{t('subscriptionPlan')} : </span>
+                <span className="font-medium text-ink">{sub.plan}</span>
               </p>
               <p className="mt-1">
-                <span className="text-gray-500">{t('subscriptionStatus')} : </span>
-                <span className="font-medium text-gray-900">{statusLabels[statusKey] ?? statusKey}</span>
+                <span className="text-muted">{t('subscriptionStatus')} : </span>
+                <span className="font-medium text-ink">{statusLabels[statusKey] ?? statusKey}</span>
               </p>
               {sub.trialEnd && sub.status === 'trialing' && (
-                <p className="mt-2 text-gray-600">
+                <p className="mt-2 text-muted">
                   {t('subscriptionTrialEnds', {
                     date: format.dateTime(new Date(sub.trialEnd), { dateStyle: 'medium' }),
                   })}
@@ -223,7 +231,7 @@ export default async function DashboardPage({
                 </p>
               )}
               {!sub.cancelAt && sub.status === 'active' && (
-                <p className="mt-2 text-gray-600">
+                <p className="mt-2 text-muted">
                   {t('subscriptionRenewsOn', {
                     date: format.dateTime(new Date(sub.currentPeriodEnd), { dateStyle: 'medium' }),
                   })}
@@ -252,25 +260,27 @@ export default async function DashboardPage({
     };
 
     return (
-      <section className="rounded-xl border border-gray-200 bg-white p-6">
-        <h2 className="text-lg font-semibold text-gray-900">{t('invoicesTitle')}</h2>
+      <section className="rounded-2xl border border-line bg-surface p-6">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">{t('invoicesTitle')}</h2>
         {invoices.length === 0 ? (
-          <p className="mt-4 text-sm text-gray-500">{t('invoicesEmpty')}</p>
+          <div className="mt-4 rounded-lg bg-surface-muted px-4 py-3 text-sm text-muted">
+            {t('invoicesEmpty')}
+          </div>
         ) : (
-          <ul className="mt-4 divide-y divide-gray-100">
+          <ul className="mt-4 divide-y divide-line">
             {invoices.map((inv) => (
               <li key={inv.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
                 <div className="text-sm">
-                  <p className="font-medium text-gray-900">
+                  <p className="font-medium text-ink">
                     {format.number(inv.amountCents / 100, {
                       style: 'currency',
                       currency: inv.currency.toUpperCase(),
                     })}
-                    <span className="ml-2 text-xs font-normal text-gray-500">
+                    <span className="ml-2 text-xs font-normal text-muted">
                       {statusLabel(inv.status)}
                     </span>
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted">
                     {format.dateTime(new Date(inv.periodStart), { dateStyle: 'medium' })}
                     {' → '}
                     {format.dateTime(new Date(inv.periodEnd), { dateStyle: 'medium' })}

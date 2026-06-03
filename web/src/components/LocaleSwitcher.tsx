@@ -15,12 +15,13 @@ export function LocaleSwitcher() {
   const [isPending, startTransition] = useTransition();
 
   return (
-    <label className="flex items-center gap-2 text-sm text-gray-600">
+    <label className="flex items-center text-sm text-muted">
       <span className="sr-only">{t('switch')}</span>
       <select
-        className="rounded border border-gray-300 bg-white px-2 py-1 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
+        className="rounded-lg border border-line bg-surface px-1.5 py-1 text-sm text-body focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
         value={locale}
         disabled={isPending}
+        aria-label={t('switch')}
         onChange={(event) => {
           const next = event.target.value as AppLocale;
           startTransition(() => {
@@ -30,7 +31,7 @@ export function LocaleSwitcher() {
       >
         {LOCALES.map((loc) => (
           <option key={loc} value={loc}>
-            {t(loc)}
+            {loc.toUpperCase()}
           </option>
         ))}
       </select>
