@@ -104,6 +104,10 @@ class SettingsActivity : AppCompatActivity() {
         editApiKey.setText(EncryptedKeyStore.getApiKey(this))
         editServerToken.setText(EncryptedKeyStore.getServerToken(this))
 
+        findViewById<MaterialButton>(R.id.buttonActivateKeyboard).setOnClickListener {
+            KeyboardSetup.openImeSettings(this)
+        }
+
         buttonTestConnection.setOnClickListener { runConnectionTest() }
 
         buttonSave.setOnClickListener {

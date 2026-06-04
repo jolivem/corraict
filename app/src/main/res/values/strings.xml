@@ -45,4 +45,28 @@
     <string name="warn_dont_show_again">Ne plus afficher</string>
     <string name="dialog_continue">Continuer</string>
     <string name="dialog_cancel">Annuler</string>
+
+    <!-- Connexion in-app -->
+    <string name="login_title">Connexion à Plume</string>
+    <string name="login_subtitle">Saisissez votre email : vous recevrez un code à 6 chiffres. Aucun mot de passe à retenir.</string>
+    <string name="login_email_label">Adresse email</string>
+    <string name="login_send_code">Recevoir mon code</string>
+    <string name="login_code_label">Code à 6 chiffres</string>
+    <string name="login_code_info">Vérifiez votre boîte mail (et vos spams). Le code expire dans 10 minutes.</string>
+    <string name="login_verify">Valider</string>
+    <string name="login_change_email">Utiliser une autre adresse</string>
+    <string name="login_advanced">Configuration avancée (clé Mistral)</string>
+    <string name="login_sending">Envoi…</string>
+    <string name="login_verifying">Connexion…</string>
+    <string name="login_done_title">Vous êtes connecté ✓</string>
+    <string name="login_done_subtitle">Dernière étape : activez le clavier Plume pour l\'utiliser dans toutes vos applications.</string>
+    <string name="login_activate_keyboard">Activer le clavier</string>
+    <string name="login_choose_keyboard">Choisir Plume comme clavier</string>
+    <string name="login_go_settings">Paramètres avancés</string>
+    <string name="login_error_email">Saisissez une adresse email valide.</string>
+    <string name="login_error_code">Code invalide ou expiré.</string>
+    <string name="login_error_rate">Trop de tentatives. Réessayez dans quelques minutes.</string>
+    <string name="login_error_network">Erreur réseau. Vérifiez votre connexion.</string>
+    <string name="login_error_generic">Une erreur est survenue, réessayez.</string>
+    <string name="dialog_login">Se connecter</string>
 </resources>

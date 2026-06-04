@@ -922,8 +922,8 @@ class CorrectKeyboardService : InputMethodService() {
         val content = layoutInflater.inflate(R.layout.dialog_missing_token, null)
         val dialog = AlertDialog.Builder(this)
             .setView(content)
-            .setPositiveButton(R.string.dialog_open_website) { _, _ ->
-                openAiCorrectWebsite()
+            .setPositiveButton(R.string.dialog_login) { _, _ ->
+                openLogin()
             }
             .setNegativeButton(R.string.dialog_close, null)
             .create()
@@ -933,6 +933,18 @@ class CorrectKeyboardService : InputMethodService() {
         lp.type = WindowManager.LayoutParams.TYPE_APPLICATION_ATTACHED_DIALOG
         window.attributes = lp
         dialog.show()
+    }
+
+    private fun openLogin() {
+        try {
+            val intent = Intent(this, LoginActivity::class.java).apply {
+                // Lancement d'une Activity depuis un Service : pas de back-stack.
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            startActivity(intent)
+        } catch (_: Throwable) {
+            openAiCorrectWebsite()
+        }
     }
 
     private fun openAiCorrectWebsite() {
