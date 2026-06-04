@@ -252,7 +252,7 @@ export const FAQ_FR: FaqCategory[] = [
       {
         q: 'Plume est-il gratuit ?',
         a: [
-          'Plume est gratuit pendant deux mois, puis devient payant par abonnement.',
+          'Plume est gratuit pendant deux semaines, puis devient payant par abonnement.',
           'Vous profitez d’un accès complet sans payer pendant la période d’essai, et vous décidez ensuite si vous souhaitez continuer.',
         ],
       },
@@ -266,15 +266,15 @@ export const FAQ_FR: FaqCategory[] = [
       {
         q: 'Combien coûte Plume ?',
         a: [
-          'Plume coûte 2,99 € par mois, après une période d’essai gratuite de deux mois.',
+          'Plume coûte 2,99 € par mois, après une période d’essai gratuite de deux semaines.',
           'Il n’y a pas de frais cachés : l’abonnement est mensuel et son prix est clair.',
         ],
       },
       {
         q: 'Comment fonctionne l’essai gratuit ?',
         a: [
-          'Vous bénéficiez de deux mois d’accès complet et gratuit dès la création de votre compte, sans aucun prélèvement.',
-          'À la fin des deux mois, l’abonnement à 2,99 € par mois prend le relais. Si vous ne souhaitez pas continuer, vous pouvez résilier avant la fin de l’essai.',
+          'Vous bénéficiez de deux semaines d’accès complet et gratuit dès la création de votre compte, sans aucun prélèvement.',
+          'À la fin des deux semaines, l’abonnement à 2,99 € par mois prend le relais. Si vous ne souhaitez pas continuer, vous pouvez résilier avant la fin de l’essai.',
         ],
       },
       {

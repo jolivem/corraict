@@ -1,17 +1,17 @@
 import { getFormatter, getTranslations, setRequestLocale } from 'next-intl/server';
-import ReactMarkdown from 'react-markdown';
-import { LegalSection } from '@/components/LegalSection';
+import { LegalMarkdown } from '@/components/LegalMarkdown';
 import { serverGet } from '@/lib/api.server';
 import type { ActiveTermsDto } from '@/lib/types';
+import { getTerms } from '@/content/legalContent';
 
-const LAST_UPDATED_FALLBACK = '2026-05-25';
+// Date de mise à jour du texte statique (fallback). À ajuster lors d'une révision.
+const LAST_UPDATED_FALLBACK = '2026-06-04';
 
 /**
  * Affiche les CGU :
  *   - Si une version active existe (gérée par l'admin), on rend son markdown
  *     dans la locale demandée (avec fallback côté backend).
- *   - Sinon, on retombe sur le contenu statique des fichiers i18n (rétrocompat
- *     avant le premier déploiement de la feature).
+ *   - Sinon, on rend le texte de référence (CGU/CGV) en markdown.
  */
 export default async function TermsPage({
   params,
@@ -30,38 +30,18 @@ export default async function TermsPage({
     `/v1/terms/active?locale=${encodeURIComponent(locale)}`,
   );
 
-  if (active) {
-    return (
-      <article className="mx-auto max-w-3xl px-6 py-12">
-        <h1 className="text-3xl font-bold text-gray-900">{t('title')}</h1>
-        <p className="mt-2 text-sm text-gray-500">
-          {tCommon('lastUpdated', {
-            date: format.dateTime(new Date(active.updatedAt), { dateStyle: 'long' }),
-          })}
-        </p>
-        <div className="prose prose-sm mt-6 max-w-none">
-          <ReactMarkdown>{active.body}</ReactMarkdown>
-        </div>
-      </article>
-    );
-  }
+  const updatedAt = active ? new Date(active.updatedAt) : new Date(LAST_UPDATED_FALLBACK);
+  const body = active ? active.body : getTerms(locale);
 
-  // Fallback statique — copie de l'ancienne page basée sur i18n.
-  const sections = ['s1', 's2', 's3', 's4', 's5', 's6'] as const;
   return (
     <article className="mx-auto max-w-3xl px-6 py-12">
       <h1 className="text-3xl font-bold text-gray-900">{t('title')}</h1>
       <p className="mt-2 text-sm text-gray-500">
         {tCommon('lastUpdated', {
-          date: format.dateTime(new Date(LAST_UPDATED_FALLBACK), { dateStyle: 'long' }),
+          date: format.dateTime(updatedAt, { dateStyle: 'long' }),
         })}
       </p>
-      <p className="mt-6 text-base text-gray-700">{t('intro')}</p>
-      {sections.map((key) => (
-        <LegalSection key={key} title={t(`${key}Title`)}>
-          {t(`${key}Body`)}
-        </LegalSection>
-      ))}
+      <LegalMarkdown>{body}</LegalMarkdown>
     </article>
   );
 }

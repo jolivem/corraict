@@ -19,7 +19,7 @@ export function GET() {
     '- Plateforme : application clavier pour Android (téléphones et tablettes). Pas encore disponible sur iPhone.',
     '- Fonctionnement : vous écrivez, puis vous appuyez sur le bouton « Corriger » ; la correction se fait à la demande, pas en continu.',
     "- Correction : orthographe et grammaire (accords, conjugaison, homonymes), sans reformulation ni changement de style.",
-    '- Prix : gratuit pendant 2 mois, puis 2,99 € par mois, sans engagement, résiliable à tout moment.',
+    '- Prix : gratuit pendant 2 semaines, puis 2,99 € par mois, sans engagement, résiliable à tout moment.',
     "- Vie privée : les textes ne sont pas stockés, sont traités au sein de l'Union européenne et ne servent jamais à entraîner une IA.",
     '',
     '## Liens',
