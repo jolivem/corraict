@@ -9,7 +9,6 @@ import type {
   SubscriptionStatus,
   UsageSummary,
 } from '@/lib/types';
-import { LogoutButton } from './LogoutButton';
 import { BillingActions } from './BillingActions';
 import { TokensSection } from './TokensSection';
 import { DataSection } from './DataSection';
@@ -54,17 +53,16 @@ export default async function DashboardPage({
           <h1 className="text-2xl font-bold text-ink">{t('title')}</h1>
           <p className="mt-1 text-sm text-muted">{t('welcome', { email: me?.email ?? '' })}</p>
         </div>
-        <div className="flex items-center gap-3">
-          {isAdmin && (
+        {isAdmin && (
+          <div className="flex items-center gap-3">
             <Link
               href="/admin"
               className="text-sm font-medium text-brand-700 hover:underline"
             >
               {t('adminLink')}
             </Link>
-          )}
-          <LogoutButton />
-        </div>
+          </div>
+        )}
       </header>
 
       <UsageCard usage={usage} quotaLimit={quotaLimit} />

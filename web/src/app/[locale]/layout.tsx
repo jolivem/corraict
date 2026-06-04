@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { Link, routing } from '@/i18n/routing';
 import { LocaleSwitcher } from '@/components/LocaleSwitcher';
+import { HeaderAuth } from '@/components/HeaderAuth';
 import { SiteFooter } from '@/components/SiteFooter';
 
 export function generateStaticParams() {
@@ -44,33 +45,16 @@ export default async function LocaleLayout({
     <NextIntlClientProvider locale={locale} messages={messages}>
       <header className="border-b border-line bg-cream">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
-          <Link
-            href="/"
-            className="shrink-0 text-base font-semibold text-ink hover:text-ink-strong sm:text-lg"
-          >
-            {t('appName')}
-          </Link>
-          <nav className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-3">
             <Link
-              href="/about"
-              className="text-sm font-medium text-ink hover:text-ink-strong"
+              href="/"
+              className="shrink-0 text-base font-semibold text-ink hover:text-ink-strong sm:text-lg"
             >
-              {t('about')}
+              {t('appName')}
             </Link>
-            <Link
-              href="/faq"
-              className="text-sm font-medium text-ink hover:text-ink-strong"
-            >
-              {t('faq')}
-            </Link>
-            <LocaleSwitcher />
-            <Link
-              href="/login"
-              className="whitespace-nowrap rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-700 sm:px-4 sm:py-2"
-            >
-              {t('ctaLogin')}
-            </Link>
-          </nav>
+            <HeaderAuth />
+          </div>
+          <LocaleSwitcher />
         </div>
       </header>
 
