@@ -18,6 +18,8 @@
     <color name="key_accent_locked">#FFF57C00</color>
     <color name="accent_correct">#FF1976D2</color>
     <color name="accent_emoji">#FFC9CDD2</color>
+    <!-- Bandeau de la rangée des emojis fréquents (distinct du fond et des tuiles). -->
+    <color name="emoji_frequent_bg">#FFC9CDD2</color>
     <!-- Fond du bouton Corriger : clair en thème clair (plume + texte foncés) ;
          en sombre, voir values-night. -->
     <color name="correct_button_bg">#FFC9CDD2</color>

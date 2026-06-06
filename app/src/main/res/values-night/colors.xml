@@ -10,6 +10,9 @@
     <color name="key_accent_locked">#FFF57C00</color>
     <color name="accent_correct">#FF3B82F6</color>
     <color name="accent_emoji">#FF262833</color>
+    <!-- Bandeau de la rangée des emojis fréquents : plus clair que le fond (#0A0A0C)
+         et que les tuiles (#2B2E3B) pour bien ressortir en sombre. -->
+    <color name="emoji_frequent_bg">#FF3A3F52</color>
     <!-- En sombre, le bouton Corriger prend le fond des autres boutons (accent_emoji). -->
     <color name="correct_button_bg">#FF262833</color>
     <color name="wave_base">#FF33B5E5</color>

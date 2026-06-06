@@ -11,6 +11,7 @@ import android.net.Uri
 import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.ColorFilter
 import android.graphics.LinearGradient
 import android.graphics.Paint
@@ -627,14 +628,13 @@ class CorrectKeyboardService : InputMethodService() {
     private fun buildFrequentEmojiRow(root: View) {
         val row = root.findViewById<LinearLayout>(R.id.emojiFrequentRow)
         row.removeAllViews()
-        val surface = ContextCompat.getColor(this, R.color.key_surface)
         val textColor = ContextCompat.getColor(this, R.color.key_text)
         for (emoji in topEmojis(FREQUENT_EMOJI_COUNT)) {
             val btn = Button(this).apply {
                 text = emoji
                 textSize = EMOJI_ROW_TEXT_SP
                 isAllCaps = false
-                setBackgroundColor(surface)
+                setBackgroundColor(Color.TRANSPARENT) // laisse voir le bandeau
                 setTextColor(textColor)
                 minWidth = 0
                 minimumWidth = 0
