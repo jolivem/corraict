@@ -1140,7 +1140,7 @@ class CorrectKeyboardService : InputMethodService() {
         private const val REPEAT_INTERVAL_MS = 50L
         private const val ANIM_PASS_DURATION_MS = 700L
         private const val NAV_BAR_FALLBACK_DP = 48f
-        private const val WAVE_CORNER_RADIUS_DP = 24f
+        private const val WAVE_CORNER_RADIUS_DP = 8f
         private const val LONG_PRESS_MS = 300L
         private const val POPUP_CHIP_WIDTH_DP = 44f
         private const val POPUP_CHIP_HEIGHT_DP = 48f

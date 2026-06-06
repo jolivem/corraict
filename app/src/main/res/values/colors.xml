@@ -18,6 +18,8 @@
     <color name="key_accent_locked">#FFF57C00</color>
     <color name="accent_correct">#FF1976D2</color>
     <color name="accent_emoji">#FFC9CDD2</color>
+    <!-- Fond du bouton Corriger : bleu en clair ; en sombre, voir values-night. -->
+    <color name="correct_button_bg">#FF1976D2</color>
     <color name="wave_base">#FF33B5E5</color>
     <color name="wave_highlight">#FFFFFFFF</color>
 </resources>

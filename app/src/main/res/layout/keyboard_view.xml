@@ -19,10 +19,11 @@
             android:text="@string/btn_correct"
             android:textAllCaps="false"
             android:textStyle="bold"
-            android:drawableStart="@drawable/ic_check"
+            android:drawableStart="@drawable/ic_plume"
             android:drawablePadding="6dp"
-            android:background="@drawable/key_bg_pill"
-            android:backgroundTint="@color/accent_correct"
+            android:paddingStart="20dp"
+            android:background="@drawable/key_bg"
+            android:backgroundTint="@color/correct_button_bg"
             android:textColor="@android:color/white"
             android:layout_margin="2dp" />
 
@@ -35,7 +36,7 @@
             android:minWidth="56dp"
             android:paddingLeft="12dp"
             android:paddingRight="12dp"
-            android:background="@drawable/key_bg_pill"
+            android:background="@drawable/key_bg"
             android:backgroundTint="@color/accent_emoji"
             android:textColor="@color/key_text"
             android:enabled="false"
@@ -51,7 +52,7 @@
             android:minWidth="56dp"
             android:paddingLeft="12dp"
             android:paddingRight="12dp"
-            android:background="@drawable/key_bg_pill"
+            android:background="@drawable/key_bg"
             android:backgroundTint="@color/accent_emoji"
             android:textColor="@color/key_text"
             android:layout_margin="2dp" />

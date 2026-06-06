@@ -21,6 +21,7 @@ Caddy demande automatiquement le cert Let's Encrypt au premier accès HTTPS.
 ### Update classique
 
 ```bash
+scp ./.env.hetzner michel@91.99.173.178:/home/michel/aicorrect
 ssh michel@91.99.173.178
 cd aicorrect
 ./update.sh             # git pull + pull images + migrations + restart app/app_pro
