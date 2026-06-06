@@ -780,30 +780,11 @@ class CorrectKeyboardService : InputMethodService() {
             return
         }
 
-        val prefs = getPreferences()
-        migrateLegacyApiKey(prefs)
-        val mode = prefs.getString(KEY_MODE, MODE_DIRECT_MISTRAL) ?: MODE_DIRECT_MISTRAL
-
-        // Charge l'identifiant adapté au mode AVANT de lire le texte, pour
-        // pouvoir refuser tôt si non configuré.
-        val credentials: CorrectionCredentials = when (mode) {
-            MODE_SERVER -> {
-                val token = EncryptedKeyStore.getServerToken(this)
-                if (token.isEmpty()) {
-                    showMissingTokenDialog()
-                    return
-                }
-                CorrectionCredentials.Server(token)
-            }
-            else -> {
-                val apiKey = EncryptedKeyStore.getApiKey(this)
-                if (apiKey.isEmpty()) {
-                    Toast.makeText(this, getString(R.string.toast_no_api_key), Toast.LENGTH_SHORT).show()
-                    return
-                }
-                val model = prefs.getString(KEY_MODEL, DEFAULT_MODEL)?.trim().orEmpty().ifEmpty { DEFAULT_MODEL }
-                CorrectionCredentials.DirectMistral(apiKey, model)
-            }
+        // Mode serveur uniquement : on récupère le token (obtenu via connexion).
+        val token = EncryptedKeyStore.getServerToken(this)
+        if (token.isEmpty()) {
+            showMissingTokenDialog()
+            return
         }
 
         val language = getSelectedLanguage()
@@ -827,19 +808,14 @@ class CorrectKeyboardService : InputMethodService() {
         }
 
         if (!correctionWasSelection && shouldShowLongTextWarning(original)) {
-            showLongTextWarning { launchCorrection(original, credentials, language) }
+            showLongTextWarning { launchCorrection(original, token, language) }
             return
         }
 
-        launchCorrection(original, credentials, language)
+        launchCorrection(original, token, language)
     }
 
-    private sealed class CorrectionCredentials {
-        data class DirectMistral(val apiKey: String, val model: String) : CorrectionCredentials()
-        data class Server(val token: String) : CorrectionCredentials()
-    }
-
-    private fun launchCorrection(original: String, credentials: CorrectionCredentials, language: String) {
+    private fun launchCorrection(original: String, token: String, language: String) {
         dismissAccentPopup()
         correctionInProgress = true
         clearSuggestions()
@@ -849,35 +825,14 @@ class CorrectKeyboardService : InputMethodService() {
         updateUndoEnabled()
         startCorrectionAnimation()
 
-        val onSuccess: (String) -> Unit = { corrected ->
-            mainHandler.post { pendingResult = PendingResult(corrected, null) }
-        }
-        val onError: (String) -> Unit = { err ->
-            mainHandler.post { pendingResult = PendingResult(original, err) }
-        }
-
-        when (credentials) {
-            is CorrectionCredentials.DirectMistral -> {
-                MistralClient.correct(
-                    apiKey = credentials.apiKey,
-                    model = credentials.model,
-                    language = language,
-                    text = original,
-                    onSuccess = onSuccess,
-                    onError = onError,
-                )
-            }
-            is CorrectionCredentials.Server -> {
-                AiCorrectClient.correct(
-                    token = credentials.token,
-                    language = language,
-                    locale = deviceLocaleTag(),
-                    text = original,
-                    onSuccess = onSuccess,
-                    onError = onError,
-                )
-            }
-        }
+        AiCorrectClient.correct(
+            token = token,
+            language = language,
+            locale = deviceLocaleTag(),
+            text = original,
+            onSuccess = { corrected -> mainHandler.post { pendingResult = PendingResult(corrected, null) } },
+            onError = { err -> mainHandler.post { pendingResult = PendingResult(original, err) } },
+        )
     }
 
     /** BCP 47 tag du locale device (ex. "fr-FR", "en-US"). Pour analytics futur. */
@@ -1091,14 +1046,6 @@ class CorrectKeyboardService : InputMethodService() {
         ic.endBatchEdit()
     }
 
-    private fun migrateLegacyApiKey(prefs: SharedPreferences) {
-        val legacy = prefs.getString(KEY_API_KEY, null)
-        if (!legacy.isNullOrBlank()) {
-            EncryptedKeyStore.setApiKey(this, legacy)
-            prefs.edit().remove(KEY_API_KEY).apply()
-        }
-    }
-
     private fun isAutoCorrectionEnabled(): Boolean {
         return getPreferences().getBoolean(KEY_AUTO_CORRECT, true)
     }
@@ -1121,11 +1068,6 @@ class CorrectKeyboardService : InputMethodService() {
         private const val KEY_AUTO_CORRECT = "auto_correct"
         private const val KEY_COMPLETION = "word_completion"
         private const val KEY_LANGUAGE = "language"
-        private const val KEY_API_KEY = "api_key"
-        private const val KEY_MODEL = "model"
-        private const val KEY_MODE = "mode"
-        private const val MODE_DIRECT_MISTRAL = "direct_mistral"
-        private const val MODE_SERVER = "server"
         private const val KEY_HIDE_LONG_TEXT_WARNING = "hide_long_text_warning"
         private const val LONG_TEXT_THRESHOLD = 500
 
@@ -1134,7 +1076,6 @@ class CorrectKeyboardService : InputMethodService() {
         private val LAYOUT_QWERTY = KeyboardLayout("qwertyuiop", "asdfghjkl", "zxcvbnm")
         private val LAYOUT_QWERTZ = KeyboardLayout("qwertzuiop", "asdfghjkl", "yxcvbnm")
         private const val DEFAULT_LANGUAGE = "fr"
-        private const val DEFAULT_MODEL = "mistral-small-latest"
         private const val MAX_CHARS = 10000
         private const val REPEAT_INITIAL_DELAY_MS = 400L
         private const val REPEAT_INTERVAL_MS = 50L

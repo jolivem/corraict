@@ -1,6 +1,5 @@
 package com.example.aicorrect
 
-import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -110,10 +109,6 @@ class LoginActivity : AppCompatActivity() {
             onSuccess = { token ->
                 runOnUiThread {
                     EncryptedKeyStore.setServerToken(this, token)
-                    // Bascule en mode serveur : le clavier utilisera ce token.
-                    getPreferences().edit()
-                        .putString(SettingsActivity.KEY_MODE, SettingsActivity.MODE_SERVER)
-                        .apply()
                     setBusy(buttonVerify, false, R.string.login_verify)
                     showStep(stepDone)
                 }
@@ -171,10 +166,6 @@ class LoginActivity : AppCompatActivity() {
             .trim()
         return model.ifBlank { "Android" }.take(100)
     }
-
-    private fun getPreferences() =
-        (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) createDeviceProtectedStorageContext() else this)
-            .getSharedPreferences(SettingsActivity.PREFS_NAME, Context.MODE_PRIVATE)
 
     companion object {
         /** Force l'affichage de l'écran de connexion même si un token existe déjà. */
