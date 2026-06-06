@@ -40,6 +40,7 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import org.json.JSONObject
 
 class CorrectKeyboardService : InputMethodService() {
 
@@ -78,6 +79,7 @@ class CorrectKeyboardService : InputMethodService() {
     private var suggestionButtons: List<Button> = emptyList()
     private var suggestionDividers: List<View> = emptyList()
     private var completionEnabled = true
+    private var emojiMode = false
 
     private data class PendingResult(val text: String, val errorMsg: String?)
 
@@ -461,6 +463,17 @@ class CorrectKeyboardService : InputMethodService() {
         panel.visibility = if (opening) View.VISIBLE else View.GONE
         area.visibility = if (opening) View.GONE else View.VISIBLE
         root.findViewById<Button>(R.id.btnEmoji).text = if (opening) "⌨️" else "😀"
+
+        // En mode smiley, la barre de complétion disparaît ; les emojis fréquents
+        // sont affichés dans leur rangée dédiée, en haut du panneau.
+        emojiMode = opening
+        if (opening) {
+            suggestionStrip?.visibility = View.GONE
+            buildFrequentEmojiRow(root)
+        } else {
+            suggestionStrip?.visibility = if (completionEnabled) View.VISIBLE else View.GONE
+            clearSuggestions()
+        }
     }
 
     private fun buildEmojiPanel(root: View) {
@@ -509,7 +522,7 @@ class CorrectKeyboardService : InputMethodService() {
                 minWidth = 0
                 minimumWidth = 0
                 setPadding(0, 0, 0, 0)
-                setOnClickListener { commit(emoji) }
+                setOnClickListener { onEmojiPicked(emoji) }
             }
             val params = GridLayout.LayoutParams().apply {
                 width = 0
@@ -559,6 +572,7 @@ class CorrectKeyboardService : InputMethodService() {
      * onStartInputView) : la hauteur du clavier reste donc constante.
      */
     private fun refreshSuggestions() {
+        if (emojiMode) return // la barre est masquée en mode smiley (rangée emoji dédiée)
         if (!completionEnabled || correctionInProgress) { clearSuggestions(); return }
         if (suggestionButtons.isEmpty()) return
         val word = currentWord()
@@ -567,6 +581,7 @@ class CorrectKeyboardService : InputMethodService() {
         suggestionButtons.forEachIndexed { i, btn ->
             val r = results.getOrNull(i)
             btn.text = if (r != null) applyCase(r, word) else ""
+            btn.textSize = SUGGESTION_TEXT_SP
         }
         // Un séparateur n'est visible que s'il y a un mot à sa droite.
         suggestionDividers.forEachIndexed { i, divider ->
@@ -598,6 +613,77 @@ class CorrectKeyboardService : InputMethodService() {
             refreshLetterCase()
         }
         clearSuggestions()
+    }
+
+    // ===================== Emojis fréquents =====================
+
+    /** Insère un emoji et incrémente son compteur d'usage. */
+    private fun onEmojiPicked(emoji: String) {
+        recordEmojiUse(emoji)
+        commit(emoji)
+    }
+
+    /** (Re)construit la rangée dédiée des emojis les plus utilisés (panneau smiley). */
+    private fun buildFrequentEmojiRow(root: View) {
+        val row = root.findViewById<LinearLayout>(R.id.emojiFrequentRow)
+        row.removeAllViews()
+        val surface = ContextCompat.getColor(this, R.color.key_surface)
+        val textColor = ContextCompat.getColor(this, R.color.key_text)
+        for (emoji in topEmojis(FREQUENT_EMOJI_COUNT)) {
+            val btn = Button(this).apply {
+                text = emoji
+                textSize = EMOJI_ROW_TEXT_SP
+                isAllCaps = false
+                setBackgroundColor(surface)
+                setTextColor(textColor)
+                minWidth = 0
+                minimumWidth = 0
+                setPadding(0, 0, 0, 0)
+                setOnClickListener { onEmojiPicked(emoji) }
+            }
+            val params = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
+            params.setMargins(2, 2, 2, 2)
+            row.addView(btn, params)
+        }
+    }
+
+    private fun recordEmojiUse(emoji: String) {
+        val prefs = getPreferences()
+        val map = parseEmojiFreq(prefs.getString(KEY_EMOJI_FREQ, null))
+        map[emoji] = (map[emoji] ?: 0) + 1
+        prefs.edit().putString(KEY_EMOJI_FREQ, serializeEmojiFreq(map)).apply()
+    }
+
+    /** Top-N emojis par fréquence ; complété par des emojis par défaut si l'historique est court. */
+    private fun topEmojis(n: Int): List<String> {
+        val map = parseEmojiFreq(getPreferences().getString(KEY_EMOJI_FREQ, null))
+        val ordered = map.entries.sortedByDescending { it.value }.map { it.key }.toMutableList()
+        for (e in DEFAULT_FREQUENT_EMOJIS) {
+            if (ordered.size >= n) break
+            if (e !in ordered) ordered.add(e)
+        }
+        return ordered.take(n)
+    }
+
+    private fun parseEmojiFreq(s: String?): MutableMap<String, Int> {
+        val map = LinkedHashMap<String, Int>()
+        if (s.isNullOrEmpty()) return map
+        try {
+            val obj = JSONObject(s)
+            val keys = obj.keys()
+            while (keys.hasNext()) {
+                val k = keys.next()
+                map[k] = obj.optInt(k)
+            }
+        } catch (_: Exception) {
+        }
+        return map
+    }
+
+    private fun serializeEmojiFreq(map: Map<String, Int>): String {
+        val obj = JSONObject()
+        for ((k, v) in map) obj.put(k, v)
+        return obj.toString()
     }
 
     private fun onShiftClick() {
@@ -714,6 +800,7 @@ class CorrectKeyboardService : InputMethodService() {
         }
         lastOriginalText = null
         updateUndoEnabled()
+        emojiMode = false
         completionEnabled = getPreferences().getBoolean(KEY_COMPLETION, true)
         // Seul endroit qui change la visibilité de la barre (changement statique
         // à l'ouverture du champ, jamais pendant la frappe).
@@ -774,11 +861,6 @@ class CorrectKeyboardService : InputMethodService() {
     private fun applyCorrection() {
         if (correctionInProgress) return
         val ic = currentInputConnection ?: return
-
-        if (!isAutoCorrectionEnabled()) {
-            Toast.makeText(this, "Correction automatique désactivée", Toast.LENGTH_SHORT).show()
-            return
-        }
 
         // Mode serveur uniquement : on récupère le token (obtenu via connexion).
         val token = EncryptedKeyStore.getServerToken(this)
@@ -999,7 +1081,9 @@ class CorrectKeyboardService : InputMethodService() {
 
         val corner = WAVE_CORNER_RADIUS_DP * resources.displayMetrics.density
         val drawable = WaveBackgroundDrawable(
-            ContextCompat.getColor(this, R.color.wave_base),
+            // Base = couleur de fond du bouton (bleu marine en clair, gris en sombre),
+            // pour garder la couleur du bouton pendant l'animation au lieu d'un bleu.
+            ContextCompat.getColor(this, R.color.correct_button_bg),
             ContextCompat.getColor(this, R.color.wave_highlight),
             corner,
         )
@@ -1046,10 +1130,6 @@ class CorrectKeyboardService : InputMethodService() {
         ic.endBatchEdit()
     }
 
-    private fun isAutoCorrectionEnabled(): Boolean {
-        return getPreferences().getBoolean(KEY_AUTO_CORRECT, true)
-    }
-
     private fun getSelectedLanguage(): String {
         return getPreferences().getString(KEY_LANGUAGE, DEFAULT_LANGUAGE) ?: DEFAULT_LANGUAGE
     }
@@ -1065,9 +1145,14 @@ class CorrectKeyboardService : InputMethodService() {
 
     companion object {
         private const val PREFS_NAME = "ime_prefs"
-        private const val KEY_AUTO_CORRECT = "auto_correct"
         private const val KEY_COMPLETION = "word_completion"
         private const val KEY_LANGUAGE = "language"
+        private const val KEY_EMOJI_FREQ = "emoji_freq"
+        private const val SUGGESTION_TEXT_SP = 16f
+        private const val EMOJI_ROW_TEXT_SP = 20f
+        private const val FREQUENT_EMOJI_COUNT = 8
+        private val DEFAULT_FREQUENT_EMOJIS =
+            listOf("😀", "😂", "❤️", "👍", "🙏", "😊", "🎉", "😍")
         private const val KEY_HIDE_LONG_TEXT_WARNING = "hide_long_text_warning"
         private const val LONG_TEXT_THRESHOLD = 500
 

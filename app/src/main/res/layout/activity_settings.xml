@@ -32,16 +32,9 @@
             android:text="@string/settings_change_email" />
 
         <com.google.android.material.switchmaterial.SwitchMaterial
-            android:id="@+id/switchAutoCorrect"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/label_autocorrect" />
-
-        <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/switchCompletion"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
             android:text="@string/label_completion" />
 
         <TextView
@@ -56,53 +49,5 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp" />
-
-
-        <!-- ============================================================ -->
-        <!-- Mode SERVER : token Bearer du dashboard web                  -->
-        <!-- ============================================================ -->
-        <LinearLayout
-            android:id="@+id/sectionServer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="16dp">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/section_server"
-                android:textAppearance="?attr/textAppearanceCaption"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/label_server_token"
-                android:textAppearance="?attr/textAppearanceBody1"
-                android:layout_marginTop="12dp" />
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                app:passwordToggleEnabled="true"
-                xmlns:app="http://schemas.android.com/apk/res-auto">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/editServerToken"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/hint_server_token"
-                    android:inputType="textPassword" />
-            </com.google.android.material.textfield.TextInputLayout>
-        </LinearLayout>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonSave"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/btn_save"
-            android:layout_marginTop="32dp" />
     </LinearLayout>
 </ScrollView>

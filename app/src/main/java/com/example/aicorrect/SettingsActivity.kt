@@ -6,21 +6,18 @@ import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
 import android.view.MenuItem
+import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.switchmaterial.SwitchMaterial
-import com.google.android.material.textfield.TextInputEditText
 
 class SettingsActivity : AppCompatActivity() {
 
-    private lateinit var switchAutoCorrect: SwitchMaterial
     private lateinit var switchCompletion: SwitchMaterial
     private lateinit var spinnerLanguage: Spinner
-    private lateinit var editServerToken: TextInputEditText
-    private lateinit var buttonSave: MaterialButton
 
     private fun getPreferences(): SharedPreferences {
         val storageContext = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -38,11 +35,8 @@ class SettingsActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = getString(R.string.settings_title)
 
-        switchAutoCorrect = findViewById(R.id.switchAutoCorrect)
         switchCompletion = findViewById(R.id.switchCompletion)
         spinnerLanguage = findViewById(R.id.spinnerLanguage)
-        editServerToken = findViewById(R.id.editServerToken)
-        buttonSave = findViewById(R.id.buttonSave)
 
         val languageLabels = listOf(
             getString(R.string.language_french),
@@ -54,13 +48,23 @@ class SettingsActivity : AppCompatActivity() {
         spinnerLanguage.adapter = languageAdapter
 
         val prefs = getPreferences()
-        switchAutoCorrect.isChecked = prefs.getBoolean(KEY_AUTO_CORRECT, true)
-        switchCompletion.isChecked = prefs.getBoolean(KEY_COMPLETION, true)
 
+        // Valeurs initiales (avant d'attacher les listeners, pour ne pas réécrire au démarrage).
+        switchCompletion.isChecked = prefs.getBoolean(KEY_COMPLETION, true)
         val savedLanguage = prefs.getString(KEY_LANGUAGE, DEFAULT_LANGUAGE) ?: DEFAULT_LANGUAGE
         spinnerLanguage.setSelection(languageCodes.indexOf(savedLanguage).coerceAtLeast(0))
 
-        editServerToken.setText(EncryptedKeyStore.getServerToken(this))
+        // Enregistrement automatique : chaque changement est persisté immédiatement
+        // (pas de bouton « Enregistrer »).
+        switchCompletion.setOnCheckedChangeListener { _, checked ->
+            prefs.edit().putBoolean(KEY_COMPLETION, checked).apply()
+        }
+        spinnerLanguage.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                prefs.edit().putString(KEY_LANGUAGE, languageCodes[position]).apply()
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
 
         findViewById<MaterialButton>(R.id.buttonActivateKeyboard).setOnClickListener {
             KeyboardSetup.openImeSettings(this)
@@ -73,18 +77,6 @@ class SettingsActivity : AppCompatActivity() {
                 Intent(this, LoginActivity::class.java)
                     .putExtra(LoginActivity.EXTRA_FORCE_LOGIN, true),
             )
-        }
-
-        buttonSave.setOnClickListener {
-            prefs.edit()
-                .putBoolean(KEY_AUTO_CORRECT, switchAutoCorrect.isChecked)
-                .putBoolean(KEY_COMPLETION, switchCompletion.isChecked)
-                .putString(KEY_LANGUAGE, languageCodes[spinnerLanguage.selectedItemPosition])
-                .apply()
-
-            EncryptedKeyStore.setServerToken(this, editServerToken.text?.toString().orEmpty())
-
-            Toast.makeText(this, getString(R.string.toast_settings_saved), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -100,7 +92,6 @@ class SettingsActivity : AppCompatActivity() {
 
     companion object {
         const val PREFS_NAME = "ime_prefs"
-        const val KEY_AUTO_CORRECT = "auto_correct"
         const val KEY_COMPLETION = "word_completion"
         const val KEY_LANGUAGE = "language"
         const val DEFAULT_LANGUAGE = "fr"

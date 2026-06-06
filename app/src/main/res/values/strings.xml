@@ -7,7 +7,6 @@
     <string name="btn_correct">Corriger</string>
     <string name="hint_correct">Appuie sur Corriger pour tester le prototype</string>
     <string name="settings_title">Paramètres</string>
-    <string name="label_autocorrect">Activer la correction automatique</string>
     <string name="label_completion">Activer les suggestions de mots</string>
     <string name="label_language">Langue du correcteur</string>
     <string name="btn_save">Enregistrer</string>

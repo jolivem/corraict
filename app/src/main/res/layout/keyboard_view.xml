@@ -20,11 +20,13 @@
             android:textAllCaps="false"
             android:textStyle="bold"
             android:drawableStart="@drawable/ic_plume"
+            android:drawableTint="@color/key_text"
             android:drawablePadding="6dp"
             android:paddingStart="20dp"
+            android:paddingEnd="48dp"
             android:background="@drawable/key_bg"
             android:backgroundTint="@color/correct_button_bg"
-            android:textColor="@android:color/white"
+            android:textColor="@color/key_text"
             android:layout_margin="2dp" />
 
         <Button
@@ -126,6 +128,14 @@
         android:layout_height="240dp"
         android:orientation="vertical"
         android:visibility="gone">
+
+        <!-- Rangée dédiée aux emojis les plus utilisés (remplie dynamiquement). -->
+        <LinearLayout
+            android:id="@+id/emojiFrequentRow"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:orientation="horizontal"
+            android:background="@color/keyboard_background" />
 
         <HorizontalScrollView
             android:layout_width="match_parent"
