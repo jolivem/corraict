@@ -41,6 +41,11 @@ const envSchema = z.object({
 
   // Bootstrap admin : emails CSV promus au rôle ADMIN au démarrage du backend.
   ADMIN_EMAILS: optionalSecret,
+  // Compte de test (revue Google Play / testeurs sans accès à la boîte mail).
+  // Si les DEUX sont définis : request-code n'envoie pas d'email pour cet email,
+  // et verify-code accepte ce code fixe. Un seul compte, sans privilège.
+  TEST_LOGIN_EMAIL: optionalSecret,
+  TEST_LOGIN_CODE: optionalSecret,
   // Quota mensuel par défaut pour le tier FREE (en nombre de requêtes /v1/correct).
   // Override par-user possible via User.monthlyRequestQuota.
   FREE_TIER_MONTHLY_QUOTA: z.coerce.number().int().positive().default(50),

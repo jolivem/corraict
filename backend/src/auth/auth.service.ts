@@ -29,6 +29,10 @@ export class AuthService {
   ) {}
 
   async requestCode(emailAddr: string, ip?: string, locale: 'fr' | 'en' = 'fr'): Promise<void> {
+    // Compte de test (revue Play Store) : aucun email envoyé ; le code fixe est
+    // accepté directement par verifyCode.
+    if (this.isTestEmail(emailAddr)) return;
+
     const windowStart = new Date(Date.now() - this.env.AUTH_CODE_RATE_LIMIT_WINDOW_SECONDS * 1000);
     const recentCount = await this.prisma.authCode.count({
       where: { email: emailAddr, createdAt: { gt: windowStart } },
@@ -59,6 +63,12 @@ export class AuthService {
     code: string,
     ctx: { ip?: string; userAgent?: string },
   ): Promise<{ sessionToken: string; userId: string; expiresAt: Date }> {
+    // Bypass compte de test : code fixe accepté sans email ni AuthCode.
+    if (this.isTestLogin(emailAddr, code)) {
+      this.logger.warn(`Test-account login used (${emailAddr})`);
+      return this.issueSession(emailAddr, ctx);
+    }
+
     const candidates = await this.prisma.authCode.findMany({
       where: { email: emailAddr, usedAt: null, expiresAt: { gt: new Date() } },
       orderBy: { createdAt: 'desc' },
@@ -92,6 +102,15 @@ export class AuthService {
       data: { usedAt: new Date(), attempts: { increment: 1 } },
     });
 
+    return this.issueSession(emailAddr, ctx);
+  }
+
+  /** Crée (ou retrouve) l'utilisateur et ouvre une session. Chemin commun au
+   *  login normal et au compte de test. */
+  private async issueSession(
+    emailAddr: string,
+    ctx: { ip?: string; userAgent?: string },
+  ): Promise<{ sessionToken: string; userId: string; expiresAt: Date }> {
     // First successful verify counts as RGPD consent — the login form makes
     // the privacy policy link visible at the time the code is submitted.
     const user = await this.prisma.user.upsert({
@@ -124,6 +143,18 @@ export class AuthService {
     });
 
     return { sessionToken, userId: user.id, expiresAt };
+  }
+
+  /** Vrai si l'email correspond au compte de test configuré (TEST_LOGIN_EMAIL). */
+  private isTestEmail(emailAddr: string): boolean {
+    const t = this.env.TEST_LOGIN_EMAIL;
+    return !!t && emailAddr.toLowerCase() === t.toLowerCase();
+  }
+
+  /** Vrai si (email, code) correspondent au compte de test (les deux env requis). */
+  private isTestLogin(emailAddr: string, code: string): boolean {
+    const c = this.env.TEST_LOGIN_CODE;
+    return this.isTestEmail(emailAddr) && !!c && code === c;
   }
 
   async resolveSession(sessionToken: string): Promise<SessionContext | null> {
