@@ -34,8 +34,10 @@ class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Déjà connecté → on file aux paramètres.
-        if (EncryptedKeyStore.getServerToken(this).isNotEmpty()) {
+        // Déjà connecté → on file aux paramètres, sauf si on force la connexion
+        // (changement d'adresse e-mail demandé depuis les réglages).
+        val forceLogin = intent.getBooleanExtra(EXTRA_FORCE_LOGIN, false)
+        if (!forceLogin && EncryptedKeyStore.getServerToken(this).isNotEmpty()) {
             startActivity(Intent(this, SettingsActivity::class.java))
             finish()
             return
@@ -173,4 +175,9 @@ class LoginActivity : AppCompatActivity() {
     private fun getPreferences() =
         (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) createDeviceProtectedStorageContext() else this)
             .getSharedPreferences(SettingsActivity.PREFS_NAME, Context.MODE_PRIVATE)
+
+    companion object {
+        /** Force l'affichage de l'écran de connexion même si un token existe déjà. */
+        const val EXTRA_FORCE_LOGIN = "force_login"
+    }
 }

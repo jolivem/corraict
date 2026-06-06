@@ -69,4 +69,5 @@
     <string name="login_error_network">Erreur réseau. Vérifiez votre connexion.</string>
     <string name="login_error_generic">Une erreur est survenue, réessayez.</string>
     <string name="dialog_login">Se connecter</string>
+    <string name="settings_change_email">Changer d\'adresse e-mail</string>
 </resources>

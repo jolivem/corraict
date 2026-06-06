@@ -1,6 +1,7 @@
 package com.example.aicorrect
 
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
@@ -106,6 +107,15 @@ class SettingsActivity : AppCompatActivity() {
 
         findViewById<MaterialButton>(R.id.buttonActivateKeyboard).setOnClickListener {
             KeyboardSetup.openImeSettings(this)
+        }
+
+        findViewById<MaterialButton>(R.id.buttonChangeEmail).setOnClickListener {
+            // Relance l'écran de connexion : le code partira sur la nouvelle adresse.
+            // Le token actuel n'est remplacé qu'après une connexion réussie.
+            startActivity(
+                Intent(this, LoginActivity::class.java)
+                    .putExtra(LoginActivity.EXTRA_FORCE_LOGIN, true),
+            )
         }
 
         buttonTestConnection.setOnClickListener { runConnectionTest() }
