@@ -21,15 +21,15 @@ Caddy demande automatiquement le cert Let's Encrypt au premier accès HTTPS.
 ### Update classique
 
 ```bash
-ssh michel@178.104.51.131
-cd vibenu
+ssh michel@91.99.173.178
+cd aicorrect
 ./update.sh             # git pull + pull images + migrations + restart app/app_pro
 ```
 
 ### Update manuel
 
 ```bash
-ssh michel@178.104.51.131
+ssh michel@91.99.173.178
 cd vibenu
 docker compose pull app app_pro
 docker compose up -d
