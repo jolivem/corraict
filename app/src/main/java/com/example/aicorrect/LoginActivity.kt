@@ -1,5 +1,6 @@
 package com.example.aicorrect
 
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -122,6 +123,7 @@ class LoginActivity : AppCompatActivity() {
             onSuccess = { token ->
                 runOnUiThread {
                     EncryptedKeyStore.setServerToken(this, token)
+                    saveEmail(email)
                     setBusy(buttonVerify, false, R.string.login_verify)
                     showStep(stepDone)
                     refreshActivationState()
@@ -140,6 +142,15 @@ class LoginActivity : AppCompatActivity() {
         // Pas de finish() : on garde cet écran dans la pile pour que « Retour » depuis
         // les paramètres avancés y revienne (au lieu de fermer l'app).
         startActivity(Intent(this, SettingsActivity::class.java))
+    }
+
+    /** Mémorise l'e-mail connecté pour l'afficher dans les paramètres. Stocké dans
+     *  les prefs (device-protected, comme les autres réglages clavier). */
+    private fun saveEmail(value: String) {
+        val storageContext =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) createDeviceProtectedStorageContext() else this
+        storageContext.getSharedPreferences(SettingsActivity.PREFS_NAME, Context.MODE_PRIVATE)
+            .edit().putString(SettingsActivity.KEY_EMAIL, value).apply()
     }
 
     /**

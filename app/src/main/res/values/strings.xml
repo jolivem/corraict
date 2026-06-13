@@ -72,4 +72,6 @@
     <string name="login_error_generic">Une erreur est survenue, réessayez.</string>
     <string name="dialog_login">Se connecter</string>
     <string name="settings_change_email">Changer d\'adresse e-mail</string>
+    <string name="settings_account">Connecté : %1$s</string>
+    <string name="settings_change_email_short">Changer</string>
 </resources>

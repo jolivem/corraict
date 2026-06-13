@@ -1,6 +1,7 @@
 package com.example.aicorrect
 
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
@@ -9,7 +10,9 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.switchmaterial.SwitchMaterial
 
 class SettingsActivity : AppCompatActivity() {
@@ -63,6 +66,22 @@ class SettingsActivity : AppCompatActivity() {
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
+
+        // Compte connecté + changement d'adresse (relance la connexion sur une autre adresse).
+        val accountEmail = findViewById<TextView>(R.id.accountEmail)
+        val email = prefs.getString(KEY_EMAIL, "").orEmpty()
+        if (email.isNotBlank()) {
+            accountEmail.text = getString(R.string.settings_account, email)
+            accountEmail.visibility = View.VISIBLE
+        } else {
+            accountEmail.visibility = View.GONE
+        }
+        findViewById<MaterialButton>(R.id.buttonChangeEmail).setOnClickListener {
+            startActivity(
+                Intent(this, LoginActivity::class.java)
+                    .putExtra(LoginActivity.EXTRA_FORCE_LOGIN, true),
+            )
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -79,6 +98,7 @@ class SettingsActivity : AppCompatActivity() {
         const val PREFS_NAME = "ime_prefs"
         const val KEY_COMPLETION = "word_completion"
         const val KEY_LANGUAGE = "language"
+        const val KEY_EMAIL = "email"
         const val DEFAULT_LANGUAGE = "fr"
     }
 }
