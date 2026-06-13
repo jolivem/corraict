@@ -1,5 +1,6 @@
 package com.example.aicorrect
 
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
@@ -29,5 +30,27 @@ object KeyboardSetup {
     fun showImePicker(context: Context) {
         val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
         imm?.showInputMethodPicker()
+    }
+
+    /** Id aplati du service Plume, tel que stocké par le système (InputMethodInfo.id
+     *  et Settings.Secure.DEFAULT_INPUT_METHOD). */
+    private fun imeId(context: Context): String =
+        ComponentName(context, CorrectKeyboardService::class.java).flattenToString()
+
+    /** Plume est-il autorisé dans la liste des claviers (étape « Activer ») ? */
+    fun isImeEnabled(context: Context): Boolean {
+        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+            ?: return false
+        val id = imeId(context)
+        return imm.enabledInputMethodList.any { it.id == id }
+    }
+
+    /** Plume est-il le clavier actif par défaut (étape « Choisir ») ? */
+    fun isImeSelected(context: Context): Boolean {
+        val current = Settings.Secure.getString(
+            context.contentResolver,
+            Settings.Secure.DEFAULT_INPUT_METHOD,
+        )
+        return current == imeId(context)
     }
 }

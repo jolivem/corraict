@@ -29,6 +29,11 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var buttonSendCode: MaterialButton
     private lateinit var buttonVerify: MaterialButton
     private lateinit var status: TextView
+    private lateinit var buttonActivateKeyboard: MaterialButton
+    private lateinit var buttonChooseKeyboard: MaterialButton
+    private lateinit var activateStatus: TextView
+    private lateinit var chooseStatus: TextView
+    private lateinit var loginReady: TextView
 
     private var email: String = ""
 
@@ -46,6 +51,10 @@ class LoginActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_login)
 
+        // L'écran a son propre titre « Connexion à Plume » dans le contenu : on masque
+        // la barre d'action « AiCorrect » (redondante, et qui tronquait le texte en haut).
+        supportActionBar?.hide()
+
         stepLogin = findViewById(R.id.stepLogin)
         stepDone = findViewById(R.id.stepDone)
         editEmail = findViewById(R.id.editEmail)
@@ -60,12 +69,14 @@ class LoginActivity : AppCompatActivity() {
         buttonVerify.setOnClickListener { onVerify() }
         findViewById<MaterialButton>(R.id.buttonAdvanced).setOnClickListener { openSettings() }
 
-        findViewById<MaterialButton>(R.id.buttonActivateKeyboard).setOnClickListener {
-            KeyboardSetup.openImeSettings(this)
-        }
-        findViewById<MaterialButton>(R.id.buttonChooseKeyboard).setOnClickListener {
-            KeyboardSetup.showImePicker(this)
-        }
+        buttonActivateKeyboard = findViewById(R.id.buttonActivateKeyboard)
+        buttonChooseKeyboard = findViewById(R.id.buttonChooseKeyboard)
+        activateStatus = findViewById(R.id.activateStatus)
+        chooseStatus = findViewById(R.id.chooseStatus)
+        loginReady = findViewById(R.id.loginReady)
+
+        buttonActivateKeyboard.setOnClickListener { KeyboardSetup.openImeSettings(this) }
+        buttonChooseKeyboard.setOnClickListener { KeyboardSetup.showImePicker(this) }
         findViewById<MaterialButton>(R.id.buttonGoSettings).setOnClickListener { openSettings() }
     }
 
@@ -113,6 +124,7 @@ class LoginActivity : AppCompatActivity() {
                     EncryptedKeyStore.setServerToken(this, token)
                     setBusy(buttonVerify, false, R.string.login_verify)
                     showStep(stepDone)
+                    refreshActivationState()
                 }
             },
             onError = { key ->
@@ -148,6 +160,32 @@ class LoginActivity : AppCompatActivity() {
         stepLogin.visibility = if (step === stepLogin) View.VISIBLE else View.GONE
         stepDone.visibility = if (step === stepDone) View.VISIBLE else View.GONE
         clearError()
+    }
+
+    /**
+     * Met à jour l'écran « connecté » selon l'état réel du clavier :
+     *  - étape 1 cochée si Plume est autorisé ;
+     *  - étape 2 activée seulement une fois l'étape 1 faite, cochée si Plume est le
+     *    clavier par défaut ;
+     *  - message « Plume est prêt » quand tout est en place.
+     */
+    private fun refreshActivationState() {
+        val enabled = KeyboardSetup.isImeEnabled(this)
+        val selected = KeyboardSetup.isImeSelected(this)
+
+        activateStatus.visibility = if (enabled) View.VISIBLE else View.GONE
+        buttonChooseKeyboard.isEnabled = enabled && !selected
+        chooseStatus.visibility = if (selected) View.VISIBLE else View.GONE
+        loginReady.visibility = if (selected) View.VISIBLE else View.GONE
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        // Au retour des réglages système ou du sélecteur de clavier (un dialog qui ne
+        // déclenche pas toujours onResume), on rafraîchit l'état des 2 étapes.
+        if (hasFocus && stepDone.visibility == View.VISIBLE) {
+            refreshActivationState()
+        }
     }
 
     private fun setBusy(button: MaterialButton, busy: Boolean, labelRes: Int) {
