@@ -1,0 +1,45 @@
+[
+  {
+    "crawlStage": "crawl",
+    "description": "Étape 1 — saisir un e-mail et demander le code de connexion.",
+    "contextDescriptor": {
+      "condition": "element_present",
+      "elementDescriptors": [
+        { "resourceId": "com.example.aicorrect:id/editEmail" }
+      ]
+    },
+    "actions": [
+      {
+        "eventType": "VIEW_TEXT_CHANGED",
+        "replacementText": "test@example.com",
+        "elementDescriptors": [
+          { "resourceId": "com.example.aicorrect:id/editEmail" }
+        ]
+      },
+      {
+        "eventType": "VIEW_CLICKED",
+        "elementDescriptors": [
+          { "resourceId": "com.example.aicorrect:id/buttonSendCode" }
+        ]
+      }
+    ]
+  },
+  {
+    "crawlStage": "crawl",
+    "description": "Si un token existe déjà (écran « connecté ») — tenter d'ouvrir le sélecteur de clavier.",
+    "contextDescriptor": {
+      "condition": "element_present",
+      "elementDescriptors": [
+        { "resourceId": "com.example.aicorrect:id/buttonActivateKeyboard" }
+      ]
+    },
+    "actions": [
+      {
+        "eventType": "VIEW_CLICKED",
+        "elementDescriptors": [
+          { "resourceId": "com.example.aicorrect:id/buttonChooseKeyboard" }
+        ]
+      }
+    ]
+  }
+]
