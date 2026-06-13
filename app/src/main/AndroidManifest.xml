@@ -11,10 +11,10 @@
         android:supportsRtl="true"
         android:requestLegacyExternalStorage="true"
         android:directBootAware="true"
-        android:theme="@style/Theme.AiCorrect">
+        android:theme="@style/Theme.Plume">
 
         <service
-            android:name="com.example.aicorrect.CorrectKeyboardService"
+            android:name="com.aicorrect.plume.CorrectKeyboardService"
             android:label="@string/ime_label"
             android:exported="true"
             android:permission="android.permission.BIND_INPUT_METHOD"

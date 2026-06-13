@@ -1,4 +1,4 @@
-package com.example.aicorrect
+package com.aicorrect.plume
 
 import android.content.ComponentName
 import android.content.Context

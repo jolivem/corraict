@@ -5,7 +5,7 @@
     "contextDescriptor": {
       "condition": "element_present",
       "elementDescriptors": [
-        { "resourceId": "com.example.aicorrect:id/editEmail" }
+        { "resourceId": "com.aicorrect.plume:id/editEmail" }
       ]
     },
     "actions": [
@@ -13,13 +13,13 @@
         "eventType": "VIEW_TEXT_CHANGED",
         "replacementText": "test@example.com",
         "elementDescriptors": [
-          { "resourceId": "com.example.aicorrect:id/editEmail" }
+          { "resourceId": "com.aicorrect.plume:id/editEmail" }
         ]
       },
       {
         "eventType": "VIEW_CLICKED",
         "elementDescriptors": [
-          { "resourceId": "com.example.aicorrect:id/buttonSendCode" }
+          { "resourceId": "com.aicorrect.plume:id/buttonSendCode" }
         ]
       }
     ]
@@ -30,14 +30,14 @@
     "contextDescriptor": {
       "condition": "element_present",
       "elementDescriptors": [
-        { "resourceId": "com.example.aicorrect:id/buttonActivateKeyboard" }
+        { "resourceId": "com.aicorrect.plume:id/buttonActivateKeyboard" }
       ]
     },
     "actions": [
       {
         "eventType": "VIEW_CLICKED",
         "elementDescriptors": [
-          { "resourceId": "com.example.aicorrect:id/buttonChooseKeyboard" }
+          { "resourceId": "com.aicorrect.plume:id/buttonChooseKeyboard" }
         ]
       }
     ]

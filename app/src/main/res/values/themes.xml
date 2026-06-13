@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.AiCorrect" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+    <style name="Theme.Plume" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         <!-- Accent bleu marine de la marque Plume (remplace le violet Material). -->
         <item name="colorPrimary">@color/brand_marine</item>
         <item name="colorPrimaryVariant">@color/brand_marine_dark</item>

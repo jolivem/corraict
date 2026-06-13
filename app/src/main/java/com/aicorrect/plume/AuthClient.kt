@@ -1,4 +1,4 @@
-package com.example.aicorrect
+package com.aicorrect.plume
 
 import okhttp3.Call
 import okhttp3.Callback

@@ -1,4 +1,4 @@
-package com.example.aicorrect
+package com.aicorrect.plume
 
 import org.junit.Test
 

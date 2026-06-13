@@ -1,4 +1,4 @@
-package com.example.aicorrect
+package com.aicorrect.plume
 
 import android.content.Intent
 import android.os.SystemClock
@@ -44,7 +44,7 @@ class KeyboardCorrectionTest {
     private val device = UiDevice.getInstance(instrumentation)
     private val ctx = instrumentation.targetContext
 
-    private val pkg = "com.example.aicorrect"
+    private val pkg = "com.aicorrect.plume"
     private val ime = "$pkg/.CorrectKeyboardService"
 
     // Phrase volontairement fautive (fr) : le backend doit la corriger.

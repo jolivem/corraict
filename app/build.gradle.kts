@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.aicorrect"
+    namespace = "com.aicorrect.plume"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -13,7 +13,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.aicorrect"
+        applicationId = "com.aicorrect.plume"
         minSdk = 24
         targetSdk = 36
         versionCode = 1

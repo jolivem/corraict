@@ -1,7 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Thème de nuit. Le nom doit être EXACTEMENT « Theme.AiCorrect » (C majuscule),
+    <!-- Thème de nuit. Le nom doit être EXACTEMENT « Theme.Plume » (C majuscule),
          comme dans le manifeste — sinon l'override de nuit est ignoré (ancien bug). -->
-    <style name="Theme.AiCorrect" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+    <style name="Theme.Plume" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         <!-- Marine plus clair en nuit pour le contraste (liens / texte sur fond sombre). -->
         <item name="colorPrimary">@color/brand_marine_light</item>
         <item name="colorPrimaryVariant">@color/brand_marine_dark</item>

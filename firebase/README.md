@@ -40,7 +40,7 @@ injecte un token, ouvre un champ et appuie sur « Corriger ».
 Fichiers : `app/src/androidTest/.../KeyboardCorrectionTest.kt`,
 `EditorTestActivity.kt`, `app/src/androidTest/AndroidManifest.xml`.
 
-Ce qu'il fait : `ime enable` + `ime set` sur `com.example.aicorrect/.CorrectKeyboardService`,
+Ce qu'il fait : `ime enable` + `ime set` sur `com.aicorrect.plume/.CorrectKeyboardService`,
 injecte le token serveur, ouvre un champ texte, pré-remplit une phrase fautive,
 clique `btnCorrect`, attend le backend et vérifie que le texte a changé.
 
@@ -85,6 +85,6 @@ gcloud firebase test android run \
   --timeout 3m
 ```
 
-> Le composant IME est `com.example.aicorrect/.CorrectKeyboardService` ;
+> Le composant IME est `com.aicorrect.plume/.CorrectKeyboardService` ;
 > les ID de ressources (`btnCorrect`, `editEmail`, …) sont préfixés par
-> `com.example.aicorrect:id/`.
+> `com.aicorrect.plume:id/`.
