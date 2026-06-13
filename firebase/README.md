@@ -10,7 +10,7 @@ cd AndroidStudioProjects\aicorrect\
 firebase\run_test.bat
 
 Voir résultats dans aicorrect2:
-https://console.firebase.google.com/u/0/project/aicorrect2/testlab/histories/bh.740deafcb288724b?fb_gclid=Cj0KCQjw_7PRBhDcARIsAMjV7jnByCt6im1utGjqp9-4zhVuTn_ol1SJfEH-mLGAwLp7UxbkxWXeSogaAvoCEALw_wcB
+https://console.firebase.google.com/u/0/project/aicorrect2/testlab/histories/bh.740deafcb288724b
 
 # Facturation Blaze (pay as you go)
 

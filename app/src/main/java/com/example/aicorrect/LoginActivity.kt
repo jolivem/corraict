@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 
 /**
  * Connexion in-app : email → code → token, sans passer par le site ni un QR code.
@@ -19,11 +20,12 @@ import com.google.android.material.textfield.TextInputEditText
  */
 class LoginActivity : AppCompatActivity() {
 
-    private lateinit var stepEmail: View
-    private lateinit var stepCode: View
+    private lateinit var stepLogin: View
     private lateinit var stepDone: View
     private lateinit var editEmail: TextInputEditText
     private lateinit var editCode: TextInputEditText
+    private lateinit var codeInputLayout: TextInputLayout
+    private lateinit var codeInfo: TextView
     private lateinit var buttonSendCode: MaterialButton
     private lateinit var buttonVerify: MaterialButton
     private lateinit var status: TextView
@@ -44,18 +46,18 @@ class LoginActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_login)
 
-        stepEmail = findViewById(R.id.stepEmail)
-        stepCode = findViewById(R.id.stepCode)
+        stepLogin = findViewById(R.id.stepLogin)
         stepDone = findViewById(R.id.stepDone)
         editEmail = findViewById(R.id.editEmail)
         editCode = findViewById(R.id.editCode)
+        codeInputLayout = findViewById(R.id.codeInputLayout)
+        codeInfo = findViewById(R.id.codeInfo)
         buttonSendCode = findViewById(R.id.buttonSendCode)
         buttonVerify = findViewById(R.id.buttonVerify)
         status = findViewById(R.id.loginStatus)
 
         buttonSendCode.setOnClickListener { onSendCode() }
         buttonVerify.setOnClickListener { onVerify() }
-        findViewById<MaterialButton>(R.id.buttonChangeEmail).setOnClickListener { showStep(stepEmail) }
         findViewById<MaterialButton>(R.id.buttonAdvanced).setOnClickListener { openSettings() }
 
         findViewById<MaterialButton>(R.id.buttonActivateKeyboard).setOnClickListener {
@@ -82,7 +84,7 @@ class LoginActivity : AppCompatActivity() {
             onSuccess = {
                 runOnUiThread {
                     setBusy(buttonSendCode, false, R.string.login_send_code)
-                    showStep(stepCode)
+                    enableCodeEntry()
                 }
             },
             onError = { key ->
@@ -127,9 +129,23 @@ class LoginActivity : AppCompatActivity() {
         finish()
     }
 
+    /**
+     * Le code est arrivé par mail : on active le champ code + « Valider » (restés
+     * grisés jusque-là), sans masquer l'email. Sert aussi de renvoi : on vide le
+     * champ code pour repartir propre.
+     */
+    private fun enableCodeEntry() {
+        codeInputLayout.isEnabled = true
+        editCode.isEnabled = true
+        buttonVerify.isEnabled = true
+        codeInfo.visibility = View.VISIBLE
+        editCode.text?.clear()
+        editCode.requestFocus()
+        clearError()
+    }
+
     private fun showStep(step: View) {
-        stepEmail.visibility = if (step === stepEmail) View.VISIBLE else View.GONE
-        stepCode.visibility = if (step === stepCode) View.VISIBLE else View.GONE
+        stepLogin.visibility = if (step === stepLogin) View.VISIBLE else View.GONE
         stepDone.visibility = if (step === stepDone) View.VISIBLE else View.GONE
         clearError()
     }

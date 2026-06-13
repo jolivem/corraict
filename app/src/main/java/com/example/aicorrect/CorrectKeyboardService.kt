@@ -23,6 +23,7 @@ import android.inputmethodservice.InputMethodService
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import android.util.Log
 import android.text.InputType
 import android.view.Gravity
@@ -928,14 +929,40 @@ class CorrectKeyboardService : InputMethodService() {
                 Log.i(TAG, "correction OK : longueur résultat=${corrected.length}")
                 Log.i(TAG, "correction OK : corrigé=\"${corrected.take(120)}\"")
                 Log.i(TAG, "correction OK : identique à l'entrée=${corrected == original}")
-                mainHandler.post { pendingResult = PendingResult(corrected, null) }
+                mainHandler.post { deliverResult(PendingResult(corrected, null)) }
             },
             onError = { err ->
                 Log.w(TAG, "correction ÉCHEC : $err")
-                mainHandler.post { pendingResult = PendingResult(original, err) }
+                mainHandler.post { deliverResult(PendingResult(original, err)) }
             },
         )
     }
+
+    /**
+     * Réception du résultat de correction. Avec les animations actives, c'est
+     * `onAnimationRepeat` de la vague qui applique le résultat en fin de passe
+     * (effet visuel). Mais si les animations sont désactivées (accessibilité
+     * « Supprimer les animations », options développeur, économiseur de batterie,
+     * environnement de test), `onAnimationRepeat` ne se déclenche jamais : on
+     * applique alors directement, sinon la correction ne serait jamais réinjectée
+     * dans le champ.
+     */
+    private fun deliverResult(result: PendingResult) {
+        pendingResult = result
+        if (!animationsEnabled() || waveAnimator?.isRunning != true) {
+            pendingResult = null
+            finalizeCorrection(result)
+        }
+        // Sinon : la prochaine boucle de l'animation appellera finalizeCorrection.
+    }
+
+    /** false si l'échelle de durée des animations est à 0 (animations coupées). */
+    private fun animationsEnabled(): Boolean =
+        try {
+            Settings.Global.getFloat(contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) > 0f
+        } catch (_: Exception) {
+            true
+        }
 
     /** BCP 47 tag du locale device (ex. "fr-FR", "en-US"). Pour analytics futur. */
     private fun deviceLocaleTag(): String {
