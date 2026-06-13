@@ -1,5 +1,7 @@
 package com.example.aicorrect
 
+import android.app.Activity
+import android.content.Intent
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -67,9 +69,13 @@ class KeyboardCorrectionTest {
 
     @Test
     fun correctionReplacesFaultyText() {
-        ActivityScenario.launch(EditorTestActivity::class.java).use { scenario ->
+        // Intent explicite construit avec le contexte de l'app : force le composant
+        // dans le package com.example.aicorrect (et non com.example.aicorrect.test),
+        // sinon ActivityScenario résout l'activité dans le mauvais process.
+        val intent = Intent(instrumentation.targetContext, EditorTestActivity::class.java)
+        ActivityScenario.launch<Activity>(intent).use { scenario ->
             // Pré-remplit le champ avec le texte fautif (curseur en fin).
-            scenario.onActivity { it.setText(faulty) }
+            scenario.onActivity { (it as EditorTestActivity).setText(faulty) }
 
             // Le clavier AiCorrect doit s'afficher : on attend le bouton « Corriger ».
             val keyboardShown = device.wait(Until.hasObject(By.res(pkg, "btnCorrect")), 10_000)
@@ -91,9 +97,9 @@ class KeyboardCorrectionTest {
         }
     }
 
-    private fun currentText(scenario: ActivityScenario<EditorTestActivity>): String {
+    private fun currentText(scenario: ActivityScenario<Activity>): String {
         var text = ""
-        scenario.onActivity { text = it.currentText() }
+        scenario.onActivity { text = (it as EditorTestActivity).currentText() }
         return text
     }
 }

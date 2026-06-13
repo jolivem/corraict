@@ -4,7 +4,7 @@ recuperer un token des session:
 
 ouvrir cmd.exe
 cd AndroidStudioProjects\aicorrect\
-.\gradlew.bat assembleDebug assembleDebugAndroidTest
+.\gradlew.bat clean assembleDebug assembleDebugAndroidTest
 firebase\run_test.bat
 
 Voir résultats dans aicorrect2:
