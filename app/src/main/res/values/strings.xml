@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">AICorrect</string>
-    <string name="ime_label">Clavier AiCorrect</string>
+    <string name="ime_label">Clavier Plume</string>
     <string name="subtype_french">Français</string>
     <string name="subtype_english">English</string>
     <string name="btn_correct">Corriger</string>

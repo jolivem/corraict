@@ -1,7 +1,6 @@
 package com.example.aicorrect
 
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
@@ -11,7 +10,6 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.button.MaterialButton
 import com.google.android.material.switchmaterial.SwitchMaterial
 
 class SettingsActivity : AppCompatActivity() {
@@ -64,19 +62,6 @@ class SettingsActivity : AppCompatActivity() {
                 prefs.edit().putString(KEY_LANGUAGE, languageCodes[position]).apply()
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
-        }
-
-        findViewById<MaterialButton>(R.id.buttonActivateKeyboard).setOnClickListener {
-            KeyboardSetup.openImeSettings(this)
-        }
-
-        findViewById<MaterialButton>(R.id.buttonChangeEmail).setOnClickListener {
-            // Relance l'écran de connexion : le code partira sur la nouvelle adresse.
-            // Le token actuel n'est remplacé qu'après une connexion réussie.
-            startActivity(
-                Intent(this, LoginActivity::class.java)
-                    .putExtra(LoginActivity.EXTRA_FORCE_LOGIN, true),
-            )
         }
     }
 

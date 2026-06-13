@@ -137,8 +137,9 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun openSettings() {
+        // Pas de finish() : on garde cet écran dans la pile pour que « Retour » depuis
+        // les paramètres avancés y revienne (au lieu de fermer l'app).
         startActivity(Intent(this, SettingsActivity::class.java))
-        finish()
     }
 
     /**
@@ -179,11 +180,25 @@ class LoginActivity : AppCompatActivity() {
         loginReady.visibility = if (selected) View.VISIBLE else View.GONE
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Retour des réglages système (activité → activité) : couvre les appareils où
+        // onWindowFocusChanged ne se redéclenche pas comme attendu.
+        refreshActivationStateIfVisible()
+    }
+
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        // Au retour des réglages système ou du sélecteur de clavier (un dialog qui ne
-        // déclenche pas toujours onResume), on rafraîchit l'état des 2 étapes.
-        if (hasFocus && stepDone.visibility == View.VISIBLE) {
+        // Reprise de focus après le sélecteur de clavier (un dialog système qui ne
+        // déclenche pas toujours onResume).
+        if (hasFocus) refreshActivationStateIfVisible()
+    }
+
+    /** Rafraîchit l'état des 2 étapes seulement si l'écran « connecté » est affiché.
+     *  Le garde `isInitialized` protège le chemin où onCreate finit tôt (déjà
+     *  connecté → redirection) sans avoir initialisé les vues. */
+    private fun refreshActivationStateIfVisible() {
+        if (::stepDone.isInitialized && stepDone.visibility == View.VISIBLE) {
             refreshActivationState()
         }
     }
