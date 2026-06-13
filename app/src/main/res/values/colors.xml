@@ -8,6 +8,12 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
+    <!-- Marque Plume (alignée sur le frontend / le logo) -->
+    <color name="brand_marine">#FF1E4D63</color>         <!-- primaire (clair) -->
+    <color name="brand_marine_dark">#FF163E4F</color>    <!-- variant / barre de statut -->
+    <color name="brand_marine_light">#FF6FA3B8</color>   <!-- primaire (nuit), pour le contraste -->
+    <color name="brand_on_marine_dark">#FF0B2A38</color> <!-- texte sur primaire clair (nuit) -->
+
     <!-- Keyboard palette (light) -->
     <color name="keyboard_background">#FFE1E5EA</color>
     <color name="key_surface">#FFFFFFFF</color>

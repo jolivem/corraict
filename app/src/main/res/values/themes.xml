@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.AiCorrect" parent="Theme.MaterialComponents.DayNight.DarkActionBar" />
+    <style name="Theme.AiCorrect" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <!-- Accent bleu marine de la marque Plume (remplace le violet Material). -->
+        <item name="colorPrimary">@color/brand_marine</item>
+        <item name="colorPrimaryVariant">@color/brand_marine_dark</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/brand_marine</item>
+        <item name="colorSecondaryVariant">@color/brand_marine_dark</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+    </style>
 
     <style name="Key">
         <item name="android:layout_width">0dp</item>
