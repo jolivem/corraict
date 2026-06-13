@@ -15,8 +15,6 @@ gcloud firebase test android run ^
   --environment-variables aicorrectToken=%AICORRECT_TOKEN% ^
   --directories-to-pull /sdcard/Android/data/com.example.aicorrect/files/screenshots ^
   --timeout 6m ^
-  --device model=MediumPhone.arm,version=30,locale=fr,orientation=portrait ^
-  --device model=MediumPhone.arm,version=34,locale=en,orientation=portrait ^
   --device model=MediumPhone.arm,version=35,locale=fr,orientation=portrait
 
 pause

@@ -894,6 +894,7 @@ class CorrectKeyboardService : InputMethodService() {
         }
 
         Log.i(TAG, "applyCorrection : sélection=$correctionWasSelection, longueur texte=${original.length}")
+        Log.i(TAG, "applyCorrection : original=\"${original.take(120)}\"")
         if (original.isBlank()) {
             Log.w(TAG, "applyCorrection : texte vide → 'Rien à corriger'")
             Toast.makeText(this, "Rien à corriger", Toast.LENGTH_SHORT).show()
@@ -925,6 +926,8 @@ class CorrectKeyboardService : InputMethodService() {
             text = original,
             onSuccess = { corrected ->
                 Log.i(TAG, "correction OK : longueur résultat=${corrected.length}")
+                Log.i(TAG, "correction OK : corrigé=\"${corrected.take(120)}\"")
+                Log.i(TAG, "correction OK : identique à l'entrée=${corrected == original}")
                 mainHandler.post { pendingResult = PendingResult(corrected, null) }
             },
             onError = { err ->

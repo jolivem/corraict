@@ -1,3 +1,5 @@
+# Build and run tests with gcloud
+
 recuperer un token des session:
  curl -c cookies.txt -X POST https://api.aicorrect.app/v1/auth/verify-code -H "Content-Type: application/json" -d "{\"email\":\"tester@aicorrect.app\",\"code\":\"MODIFIER\"}"
  curl -b cookies.txt -X POST https://api.aicorrect.app/v1/auth/tokens -H "Content-Type: application/json" -d "{\"label\":\"FirebaseTest\"}"
@@ -9,6 +11,13 @@ firebase\run_test.bat
 
 Voir résultats dans aicorrect2:
 https://console.firebase.google.com/u/0/project/aicorrect2/testlab/histories/bh.740deafcb288724b?fb_gclid=Cj0KCQjw_7PRBhDcARIsAMjV7jnByCt6im1utGjqp9-4zhVuTn_ol1SJfEH-mLGAwLp7UxbkxWXeSogaAvoCEALw_wcB
+
+# Facturation Blaze (pay as you go)
+
+gcloud config get-value project
+gcloud billing accounts list
+gcloud billing projects link TON_PROJET --billing-account=XXXXXX-XXXXXX-XXXXXX
+
 
 # Tests Firebase Test Lab — clavier AiCorrect
 

@@ -54,6 +54,14 @@ class KeyboardCorrectionTest {
 
     @Before
     fun setUp() {
+        // 0) Réactive les animations : Test Lab (et l'instrumentation en général) les
+        //    coupe (animator_duration_scale=0). Or la correction n'est réinjectée dans
+        //    le champ que sur onAnimationRepeat de l'animation « vague » du bouton ;
+        //    sans animation, finalizeCorrection() ne se déclenche jamais.
+        device.executeShellCommand("settings put global window_animation_scale 1")
+        device.executeShellCommand("settings put global transition_animation_scale 1")
+        device.executeShellCommand("settings put global animator_duration_scale 1")
+
         // 1) Active puis sélectionne le clavier AiCorrect comme IME par défaut.
         device.executeShellCommand("ime enable $ime")
         device.executeShellCommand("ime set $ime")
