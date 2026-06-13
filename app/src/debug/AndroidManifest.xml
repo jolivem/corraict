@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Activité de test présente uniquement dans la variante debug : sert de
+         cible de saisie pour faire apparaître le clavier AiCorrect lors des
+         tests instrumentés. Absente de la build release. -->
+    <application>
+        <activity
+            android:name=".EditorTestActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.Material.Light" />
+    </application>
+</manifest>

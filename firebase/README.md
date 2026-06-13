@@ -1,8 +1,14 @@
+recuperer un token des session:
+ curl -c cookies.txt -X POST https://api.aicorrect.app/v1/auth/verify-code -H "Content-Type: application/json" -d "{\"email\":\"tester@aicorrect.app\",\"code\":\"MODIFIER\"}"
+ curl -b cookies.txt -X POST https://api.aicorrect.app/v1/auth/tokens -H "Content-Type: application/json" -d "{\"label\":\"FirebaseTest\"}"
+
 ouvrir cmd.exe
 cd AndroidStudioProjects\aicorrect\
 .\gradlew.bat assembleDebug assembleDebugAndroidTest
-cd firebase
-run_test.bat
+firebase\run_test.bat
+
+Voir résultats dans aicorrect2:
+https://console.firebase.google.com/u/0/project/aicorrect2/testlab/histories/bh.740deafcb288724b?fb_gclid=Cj0KCQjw_7PRBhDcARIsAMjV7jnByCt6im1utGjqp9-4zhVuTn_ol1SJfEH-mLGAwLp7UxbkxWXeSogaAvoCEALw_wcB
 
 # Tests Firebase Test Lab — clavier AiCorrect
 

@@ -8,12 +8,18 @@ import android.view.WindowManager
 import android.widget.EditText
 
 /**
- * Activité minimale (uniquement compilée dans l'APK de test) qui présente un
- * champ de saisie focalisé. Quand le clavier AiCorrect est l'IME par défaut,
- * l'ouvrir suffit à afficher le clavier et donc le bouton « Corriger ».
+ * Activité minimale présente uniquement dans la variante **debug** de l'app
+ * (pas en release). Elle présente un champ de saisie focalisé : quand le clavier
+ * AiCorrect est l'IME par défaut, l'ouvrir suffit à afficher le clavier et donc
+ * le bouton « Corriger ».
  *
- * On ne dépend d'aucune ressource de l'app : la vue est construite en code et
- * le thème vient du framework, pour rester indépendant du package de l'app.
+ * Volontairement dans le source set `debug` (et non `androidTest`) : ainsi elle
+ * appartient au package de l'app `com.example.aicorrect` et tourne dans le même
+ * process que l'instrumentation — sinon ActivityScenario échoue avec
+ * « resolved to different process com.example.aicorrect.test ».
+ *
+ * Aucune dépendance aux ressources de l'app : vue construite en code, thème du
+ * framework.
  */
 class EditorTestActivity : Activity() {
 
