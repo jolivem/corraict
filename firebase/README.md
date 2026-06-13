@@ -1,3 +1,9 @@
+ouvrir cmd.exe
+cd AndroidStudioProjects\aicorrect\
+.\gradlew.bat assembleDebug assembleDebugAndroidTest
+cd firebase
+run_test.bat
+
 # Tests Firebase Test Lab — clavier AiCorrect
 
 Deux approches complémentaires. **Pour réellement tester la correction du clavier,
