@@ -23,6 +23,7 @@ import android.inputmethodservice.InputMethodService
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.text.InputType
 import android.view.Gravity
 import android.view.MotionEvent
@@ -859,11 +860,19 @@ class CorrectKeyboardService : InputMethodService() {
     private val mainHandler = Handler(Looper.getMainLooper())
 
     private fun applyCorrection() {
-        if (correctionInProgress) return
-        val ic = currentInputConnection ?: return
+        if (correctionInProgress) {
+            Log.i(TAG, "applyCorrection ignoré : correction déjà en cours")
+            return
+        }
+        val ic = currentInputConnection
+        if (ic == null) {
+            Log.w(TAG, "applyCorrection : currentInputConnection == null (aucun champ lié)")
+            return
+        }
 
         // Mode serveur uniquement : on récupère le token (obtenu via connexion).
         val token = EncryptedKeyStore.getServerToken(this)
+        Log.i(TAG, "applyCorrection : token présent=${token.isNotEmpty()} (len=${token.length})")
         if (token.isEmpty()) {
             showMissingTokenDialog()
             return
@@ -884,7 +893,9 @@ class CorrectKeyboardService : InputMethodService() {
             correctionWasSelection = false
         }
 
+        Log.i(TAG, "applyCorrection : sélection=$correctionWasSelection, longueur texte=${original.length}")
         if (original.isBlank()) {
+            Log.w(TAG, "applyCorrection : texte vide → 'Rien à corriger'")
             Toast.makeText(this, "Rien à corriger", Toast.LENGTH_SHORT).show()
             return
         }
@@ -912,8 +923,14 @@ class CorrectKeyboardService : InputMethodService() {
             language = language,
             locale = deviceLocaleTag(),
             text = original,
-            onSuccess = { corrected -> mainHandler.post { pendingResult = PendingResult(corrected, null) } },
-            onError = { err -> mainHandler.post { pendingResult = PendingResult(original, err) } },
+            onSuccess = { corrected ->
+                Log.i(TAG, "correction OK : longueur résultat=${corrected.length}")
+                mainHandler.post { pendingResult = PendingResult(corrected, null) }
+            },
+            onError = { err ->
+                Log.w(TAG, "correction ÉCHEC : $err")
+                mainHandler.post { pendingResult = PendingResult(original, err) }
+            },
         )
     }
 
@@ -1144,6 +1161,7 @@ class CorrectKeyboardService : InputMethodService() {
     }
 
     companion object {
+        private const val TAG = "AiCorrectKbd"
         private const val PREFS_NAME = "ime_prefs"
         private const val KEY_COMPLETION = "word_completion"
         private const val KEY_LANGUAGE = "language"
