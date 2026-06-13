@@ -32,10 +32,12 @@ object KeyboardSetup {
         imm?.showInputMethodPicker()
     }
 
-    /** Id aplati du service Plume, tel que stocké par le système (InputMethodInfo.id
-     *  et Settings.Secure.DEFAULT_INPUT_METHOD). */
+    /** Id du service Plume tel que stocké par le système : forme COURTE
+     *  (`pkg/.Classe`), identique à `InputMethodInfo.id` et à
+     *  `Settings.Secure.DEFAULT_INPUT_METHOD`. Ne pas utiliser `flattenToString()`
+     *  (forme longue) : la comparaison échouerait. */
     private fun imeId(context: Context): String =
-        ComponentName(context, CorrectKeyboardService::class.java).flattenToString()
+        ComponentName(context, CorrectKeyboardService::class.java).flattenToShortString()
 
     /** Plume est-il autorisé dans la liste des claviers (étape « Activer ») ? */
     fun isImeEnabled(context: Context): Boolean {
