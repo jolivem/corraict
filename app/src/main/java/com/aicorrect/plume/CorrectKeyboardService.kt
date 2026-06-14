@@ -3,7 +3,6 @@ package com.aicorrect.plume
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
-import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -26,6 +25,7 @@ import android.os.Looper
 import android.provider.Settings
 import android.util.Log
 import android.text.InputType
+import android.view.ContextThemeWrapper
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -40,6 +40,7 @@ import android.widget.LinearLayout
 import android.widget.PopupWindow
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -1004,7 +1005,7 @@ class CorrectKeyboardService : InputMethodService() {
             return
         }
         val content = layoutInflater.inflate(R.layout.dialog_missing_token, null)
-        val dialog = AlertDialog.Builder(this)
+        val dialog = AlertDialog.Builder(dialogContext())
             .setView(content)
             .setPositiveButton(R.string.dialog_login) { _, _ ->
                 openLogin()
@@ -1024,13 +1025,16 @@ class CorrectKeyboardService : InputMethodService() {
      * (aucun abonnement actif). Le bouton principal ouvre le site déjà
      * authentifié (magic-link) pour souscrire ; le texte reste inchangé.
      */
+    /** Contexte au thème DayNight pour les popups (suivent le mode clair/sombre). */
+    private fun dialogContext(): Context = ContextThemeWrapper(this, R.style.Theme_Plume_Dialog)
+
     private fun showSubscriptionDialog() {
         val token = inputView?.windowToken ?: run {
             // Pas de windowToken pour attacher le dialog : repli sur un toast.
             Toast.makeText(this, R.string.dialog_subscribe_message, Toast.LENGTH_LONG).show()
             return
         }
-        val dialog = AlertDialog.Builder(this)
+        val dialog = AlertDialog.Builder(dialogContext())
             .setTitle(R.string.dialog_subscribe_title)
             .setMessage(R.string.dialog_subscribe_message)
             .setPositiveButton(R.string.dialog_subscribe_cta) { _, _ -> openBillingWebSession() }
@@ -1096,7 +1100,7 @@ class CorrectKeyboardService : InputMethodService() {
         val token = inputView?.windowToken ?: run { onContinue(); return }
         val content = layoutInflater.inflate(R.layout.dialog_long_text_warning, null)
         val checkbox = content.findViewById<CheckBox>(R.id.cbDontShowAgain)
-        val dialog = AlertDialog.Builder(this)
+        val dialog = AlertDialog.Builder(dialogContext())
             .setView(content)
             .setPositiveButton(R.string.dialog_continue) { _, _ ->
                 if (checkbox.isChecked) {
