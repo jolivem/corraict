@@ -43,7 +43,7 @@ const envSchema = z.object({
   MISTRAL_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
   MISTRAL_API_URL: z.string().url().default('https://api.mistral.ai/v1/chat/completions'),
 
-  STRIPE_TRIAL_DAYS: z.coerce.number().int().nonnegative().default(7),
+  STRIPE_TRIAL_DAYS: z.coerce.number().int().nonnegative().default(15),
 
   // Bootstrap admin : emails CSV promus au rôle ADMIN au démarrage du backend.
   ADMIN_EMAILS: optionalSecret,

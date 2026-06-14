@@ -33,15 +33,15 @@ export default async function DashboardPage({
     serverGet<InvoiceDto[]>('/v1/billing/invoices'),
   ]);
 
-  // Quota = présent uniquement pour les users FREE sans subscription active.
-  // Les ADMIN, les PRO actifs et les "PRO offerts" (plan=PRO sans Stripe sub)
-  // ne sont pas limités → on n'affiche pas la barre.
-  // `effectiveQuota` vient de /v1/auth/me (null pour ADMIN ou plan=PRO).
+  // Il n'y a plus de palier gratuit : l'accès au correcteur nécessite un
+  // abonnement. On n'affiche donc jamais de barre de quota — un utilisateur
+  // sans abonnement voit l'invite « S'abonner » dans la carte Abonnement.
+  // (La barre reste prête côté UsageCard pour un futur quota premium.)
   const hasActiveSub = (subscription?.subscription?.status ?? '') === 'active' ||
     (subscription?.subscription?.status ?? '') === 'trialing';
   const isAdmin = me?.role === 'ADMIN';
   const isComplimentaryPro = me?.plan === 'PRO' && !hasActiveSub;
-  const quotaLimit = !isAdmin && !hasActiveSub ? (me?.effectiveQuota ?? null) : null;
+  const quotaLimit: number | null = null;
 
   const t = await getTranslations('Dashboard');
   const format = await getFormatter();

@@ -8,13 +8,15 @@ import { QuotaExceededException } from '../common/quota-exceeded.exception';
  *
  * Règles (dans l'ordre) :
  *   1. ADMIN : bypass total.
- *   2. Compte suspendu ou soft-deleted : 403 `account_suspended`.
- *   3. Subscription active (`trialing` ou `active`) : pas de limite.
- *   4. Sinon tier FREE : compteur UsageMonthly < quota effectif sinon 402.
+ *   2. Compte de test (revue Google Play) : bypass total.
+ *   3. Compte suspendu ou soft-deleted : 403 `account_suspended`.
+ *   4. Cadeau admin `plan = PRO` : pas de limite.
+ *   5. Subscription Stripe active (`trialing` ou `active`) : pas de limite.
+ *   6. Sinon : aucun accès gratuit → 402 `billing_required`. Le client
+ *      (app/web) invite alors l'utilisateur à s'abonner (essai gratuit).
  *
- * Quota effectif = `user.monthlyRequestQuota` (override) sinon
- * `env.FREE_TIER_MONTHLY_QUOTA`. Le compteur est lu sur la table
- * `UsageMonthly` déjà alimentée par `UsageService.record()`.
+ * Il n'y a plus de palier gratuit (les corrections nécessitent un abonnement,
+ * avec essai gratuit via Stripe Checkout).
  */
 @Injectable()
 export class QuotaService {
@@ -26,9 +28,9 @@ export class QuotaService {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {
+        email: true,
         role: true,
         plan: true,
-        monthlyRequestQuota: true,
         suspendedAt: true,
         deletedAt: true,
       },
@@ -43,6 +45,16 @@ export class QuotaService {
     }
 
     if (user.role === 'ADMIN') return;
+
+    // Compte de test (revue Google Play) : accès complet sans abonnement, pour
+    // que les testeurs puissent essayer le correcteur. Aligné sur le bypass
+    // d'authentification du compte de test dans AuthService.
+    if (
+      this.env.TEST_LOGIN_EMAIL &&
+      user.email.toLowerCase() === this.env.TEST_LOGIN_EMAIL.toLowerCase()
+    ) {
+      return;
+    }
 
     if (user.suspendedAt || user.deletedAt) {
       throw new QuotaExceededException({
@@ -64,34 +76,12 @@ export class QuotaService {
     });
     if (activeSub) return;
 
-    const effectiveQuota = user.monthlyRequestQuota ?? this.env.FREE_TIER_MONTHLY_QUOTA;
-    const yearMonth = this.currentYearMonth();
-    const monthly = await this.prisma.usageMonthly.findUnique({
-      where: { userId_yearMonth: { userId, yearMonth } },
-      select: { requests: true },
+    // Plus de palier gratuit : sans abonnement actif (ni cadeau Pro, ni admin,
+    // ni compte de test), l'accès au correcteur est refusé. Le client affiche
+    // une invite d'abonnement (essai gratuit via Stripe Checkout) sur ce code.
+    throw new QuotaExceededException({
+      code: 'billing_required',
+      message: 'An active subscription is required to use the corrector',
     });
-    const used = monthly?.requests ?? 0;
-
-    if (used >= effectiveQuota) {
-      throw new QuotaExceededException({
-        code: 'quota_exceeded',
-        message: `Monthly free quota of ${effectiveQuota} requests reached`,
-        quota: effectiveQuota,
-        used,
-        retryAt: this.nextMonthStartIso(),
-      });
-    }
-  }
-
-  private currentYearMonth(): string {
-    const d = new Date();
-    const y = d.getUTCFullYear();
-    const m = String(d.getUTCMonth() + 1).padStart(2, '0');
-    return `${y}-${m}`;
-  }
-
-  private nextMonthStartIso(): string {
-    const d = new Date();
-    return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1)).toISOString();
   }
 }

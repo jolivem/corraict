@@ -55,7 +55,8 @@ class SettingsActivity : AppCompatActivity() {
 
         // Valeurs initiales (avant d'attacher les listeners, pour ne pas réécrire au démarrage).
         switchCompletion.isChecked = prefs.getBoolean(KEY_COMPLETION, true)
-        val savedLanguage = prefs.getString(KEY_LANGUAGE, DEFAULT_LANGUAGE) ?: DEFAULT_LANGUAGE
+        val defaultLanguage = deviceDefaultLanguage()
+        val savedLanguage = prefs.getString(KEY_LANGUAGE, defaultLanguage) ?: defaultLanguage
         spinnerLanguage.setSelection(languageCodes.indexOf(savedLanguage).coerceAtLeast(0))
 
         // Enregistrement automatique : chaque changement est persisté immédiatement
@@ -141,6 +142,5 @@ class SettingsActivity : AppCompatActivity() {
         const val KEY_COMPLETION = "word_completion"
         const val KEY_LANGUAGE = "language"
         const val KEY_EMAIL = "email"
-        const val DEFAULT_LANGUAGE = "fr"
     }
 }

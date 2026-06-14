@@ -72,13 +72,13 @@ L'utilisation du Service nécessite la création d'un Compte. L'Utilisateur s'en
 
 L'accès au Service est soumis à un abonnement au prix de **2,99 € par mois**, libellé en euros. Ce prix est le prix final dû par l'Utilisateur (TVA non applicable, article 293 B du Code général des impôts).
 
-Un **essai gratuit de deux (2) semaines** est proposé aux nouveaux Utilisateurs lors de leur première souscription ; aucun montant n'est prélevé pendant cette période.
+Un **essai gratuit de quinze (15) jours** est proposé aux nouveaux Utilisateurs lors de leur première souscription ; aucun montant n'est prélevé pendant cette période.
 
 ### 5.2 Paiement et date de prélèvement
 
 Le paiement est traité par le prestataire de paiement **Stripe**. L'Éditeur n'a pas accès aux données complètes de la carte bancaire de l'Utilisateur. En souscrivant, l'Utilisateur autorise le prélèvement récurrent du montant de l'abonnement.
 
-Le premier prélèvement intervient à l'issue de l'essai gratuit de deux semaines (ou dès la souscription si aucun essai n'est applicable), sauf résiliation avant son terme. Les prélèvements suivants interviennent ensuite chaque mois à la **date anniversaire** du premier paiement.
+Le premier prélèvement intervient à l'issue de l'essai gratuit de quinze jours (ou dès la souscription si aucun essai n'est applicable), sauf résiliation avant son terme. Les prélèvements suivants interviennent ensuite chaque mois à la **date anniversaire** du premier paiement.
 
 ### 5.3 Facturation
 
@@ -351,13 +351,13 @@ Use of the Service requires the creation of an Account. The User undertakes to p
 
 Access to the Service is subject to a subscription at the price of **€2.99 per month**, denominated in euros. This price is the final price owed by the User (VAT not applicable, Article 293 B of the French General Tax Code).
 
-A **free trial of two (2) weeks** is offered to new Users upon their first subscription; no amount is charged during this period.
+A **free trial of fifteen (15) days** is offered to new Users upon their first subscription; no amount is charged during this period.
 
 ### 5.2 Payment and billing date
 
 Payment is processed by the payment provider **Stripe**. The Publisher does not have access to the User's full bank-card details. By subscribing, the User authorises the recurring charge of the subscription amount.
 
-The first charge occurs at the end of the two-week free trial (or immediately upon subscription if no trial applies), unless cancelled before its end. Subsequent charges then occur each month on the **anniversary date** of the first payment.
+The first charge occurs at the end of the fifteen-day free trial (or immediately upon subscription if no trial applies), unless cancelled before its end. Subsequent charges then occur each month on the **anniversary date** of the first payment.
 
 ### 5.3 Invoicing
 

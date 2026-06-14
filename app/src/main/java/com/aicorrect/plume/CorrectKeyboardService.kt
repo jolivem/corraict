@@ -84,7 +84,7 @@ class CorrectKeyboardService : InputMethodService() {
     private var completionEnabled = true
     private var emojiMode = false
 
-    private data class PendingResult(val text: String, val errorMsg: String?)
+    private data class PendingResult(val text: String, val errorMsg: String?, val errorCode: String? = null)
 
     override fun onCreate() {
         super.onCreate()
@@ -931,9 +931,9 @@ class CorrectKeyboardService : InputMethodService() {
                 Log.i(TAG, "correction OK : identique à l'entrée=${corrected == original}")
                 mainHandler.post { deliverResult(PendingResult(corrected, null)) }
             },
-            onError = { err ->
-                Log.w(TAG, "correction ÉCHEC : $err")
-                mainHandler.post { deliverResult(PendingResult(original, err)) }
+            onError = { err, code ->
+                Log.w(TAG, "correction ÉCHEC : $err (code=$code)")
+                mainHandler.post { deliverResult(PendingResult(original, err, code)) }
             },
         )
     }
@@ -1019,6 +1019,49 @@ class CorrectKeyboardService : InputMethodService() {
         dialog.show()
     }
 
+    /**
+     * Invite d'abonnement affichée quand le backend renvoie `billing_required`
+     * (aucun abonnement actif). Le bouton principal ouvre le site déjà
+     * authentifié (magic-link) pour souscrire ; le texte reste inchangé.
+     */
+    private fun showSubscriptionDialog() {
+        val token = inputView?.windowToken ?: run {
+            // Pas de windowToken pour attacher le dialog : repli sur un toast.
+            Toast.makeText(this, R.string.dialog_subscribe_message, Toast.LENGTH_LONG).show()
+            return
+        }
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(R.string.dialog_subscribe_title)
+            .setMessage(R.string.dialog_subscribe_message)
+            .setPositiveButton(R.string.dialog_subscribe_cta) { _, _ -> openBillingWebSession() }
+            .setNegativeButton(R.string.dialog_close, null)
+            .create()
+        val window = dialog.window ?: return
+        val lp = window.attributes
+        lp.token = token
+        lp.type = WindowManager.LayoutParams.TYPE_APPLICATION_ATTACHED_DIALOG
+        window.attributes = lp
+        dialog.show()
+    }
+
+    /**
+     * Ouvre le site de gestion d'abonnement en arrivant déjà connecté : demande
+     * un lien à usage unique avec le token de l'appareil, puis l'ouvre dans le
+     * navigateur. Repli sur le site public si pas de token ou en cas d'échec.
+     */
+    private fun openBillingWebSession() {
+        val token = EncryptedKeyStore.getServerToken(this)
+        if (token.isEmpty()) {
+            openAiCorrectWebsite()
+            return
+        }
+        AuthClient.createWebSession(
+            token,
+            onSuccess = { url -> mainHandler.post { openUrlNewTask(url) } },
+            onError = { mainHandler.post { openAiCorrectWebsite() } },
+        )
+    }
+
     private fun openLogin() {
         try {
             val intent = Intent(this, LoginActivity::class.java).apply {
@@ -1032,15 +1075,20 @@ class CorrectKeyboardService : InputMethodService() {
     }
 
     private fun openAiCorrectWebsite() {
+        openUrlNewTask("https://aicorrect.app")
+    }
+
+    /** Ouvre une URL dans le navigateur depuis le Service (donc en NEW_TASK). */
+    private fun openUrlNewTask(url: String) {
         try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://aicorrect.app")).apply {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
                 // Obligatoire : on lance un Activity depuis un Service (pas de back-stack).
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             startActivity(intent)
         } catch (_: Throwable) {
             // Pas de navigateur installé / activity non résolue
-            Toast.makeText(this, "https://aicorrect.app", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, url, Toast.LENGTH_LONG).show()
         }
     }
 
@@ -1088,11 +1136,19 @@ class CorrectKeyboardService : InputMethodService() {
         updateUndoEnabled()
         refreshSuggestions()
         result.errorMsg?.let { err ->
-            Toast.makeText(
-                this,
-                "${getString(R.string.toast_correction_failed)} : $err",
-                Toast.LENGTH_LONG
-            ).show()
+            when (result.errorCode) {
+                // Pas d'abonnement actif : on invite à s'abonner (popup + lien site).
+                "billing_required" -> showSubscriptionDialog()
+                // Quota atteint (cas résiduel) : message dédié, sans préfixe « Échec… ».
+                "quota_exceeded" ->
+                    Toast.makeText(this, R.string.toast_quota_reached, Toast.LENGTH_LONG).show()
+                else ->
+                    Toast.makeText(
+                        this,
+                        "${getString(R.string.toast_correction_failed)} : $err",
+                        Toast.LENGTH_LONG,
+                    ).show()
+            }
         }
     }
 
@@ -1178,7 +1234,8 @@ class CorrectKeyboardService : InputMethodService() {
     }
 
     private fun getSelectedLanguage(): String {
-        return getPreferences().getString(KEY_LANGUAGE, DEFAULT_LANGUAGE) ?: DEFAULT_LANGUAGE
+        val default = deviceDefaultLanguage()
+        return getPreferences().getString(KEY_LANGUAGE, default) ?: default
     }
 
     private fun getPreferences(): SharedPreferences {
@@ -1208,7 +1265,6 @@ class CorrectKeyboardService : InputMethodService() {
         private val LAYOUT_AZERTY = KeyboardLayout("azertyuiop", "qsdfghjklm", "wxcvbn'")
         private val LAYOUT_QWERTY = KeyboardLayout("qwertyuiop", "asdfghjkl", "zxcvbnm")
         private val LAYOUT_QWERTZ = KeyboardLayout("qwertzuiop", "asdfghjkl", "yxcvbnm")
-        private const val DEFAULT_LANGUAGE = "fr"
         private const val MAX_CHARS = 10000
         private const val REPEAT_INITIAL_DELAY_MS = 400L
         private const val REPEAT_INTERVAL_MS = 50L

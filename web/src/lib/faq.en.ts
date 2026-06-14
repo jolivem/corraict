@@ -252,7 +252,7 @@ export const FAQ_EN: FaqCategory[] = [
       {
         q: 'Is Plume free?',
         a: [
-          'Plume is free for two weeks, then becomes paid through a subscription.',
+          'Plume offers a 15-day free trial when you subscribe; it then becomes paid through a subscription.',
           'You enjoy full access without paying during the trial period, and you then decide whether you want to continue.',
         ],
       },
@@ -266,15 +266,15 @@ export const FAQ_EN: FaqCategory[] = [
       {
         q: 'How much does Plume cost?',
         a: [
-          'Plume costs €2.99 per month, after a free trial period of two weeks.',
+          'Plume costs €2.99 per month, after a free trial period of 15 days.',
           'There are no hidden fees: the subscription is monthly and its price is clear.',
         ],
       },
       {
         q: 'How does the free trial work?',
         a: [
-          'You get two weeks of full, free access as soon as you create your account, with no charge.',
-          'At the end of the two weeks, the €2.99-per-month subscription takes over. If you don’t wish to continue, you can cancel before the end of the trial.',
+          'When you subscribe, you get 15 days of full, free access; no amount is charged during this trial period.',
+          'At the end of the 15 days, the €2.99-per-month subscription takes over. If you don’t wish to continue, you can cancel before the end of the trial.',
         ],
       },
       {

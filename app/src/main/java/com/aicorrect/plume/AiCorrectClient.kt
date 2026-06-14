@@ -58,7 +58,7 @@ object AiCorrectClient {
         locale: String,
         text: String,
         onSuccess: (String) -> Unit,
-        onError: (String) -> Unit,
+        onError: (message: String, code: String) -> Unit,
     ) {
         val payload = JSONObject().apply {
             put("text", text)
@@ -75,7 +75,7 @@ object AiCorrectClient {
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                onError(e.message ?: "Erreur réseau")
+                onError(e.message ?: "Erreur réseau", "")
             }
 
             override fun onResponse(call: Call, response: Response) {
@@ -86,17 +86,26 @@ object AiCorrectClient {
                             val corrected = JSONObject(raw).getString("corrected").trim()
                             onSuccess(corrected)
                         } catch (ex: Exception) {
-                            onError("Réponse invalide du serveur")
+                            onError("Réponse invalide du serveur", "")
                         }
                         return
                     }
                     // Erreur structurée : { code, message, ... } ou Nest enveloppe { message, statusCode }
-                    val msg = parseErrorMessage(raw, it.code)
-                    onError(msg)
+                    // Le `code` (ex. quota_exceeded) est remonté tel quel pour que
+                    // l'appelant puisse adapter l'UI (message dédié, etc.).
+                    onError(parseErrorMessage(raw, it.code), parseErrorCode(raw))
                 }
             }
         })
     }
+
+    /** Extrait le `code` métier du body d'erreur (ex. quota_exceeded), ou "". */
+    private fun parseErrorCode(raw: String): String =
+        try {
+            JSONObject(raw).optString("code", "")
+        } catch (_: Exception) {
+            ""
+        }
 
     private fun parseErrorMessage(raw: String, httpCode: Int): String {
         if (raw.isBlank()) return "Erreur HTTP $httpCode"
@@ -106,11 +115,9 @@ object AiCorrectClient {
             val code = obj.optString("code", "")
             if (code.isNotEmpty()) {
                 when (code) {
-                    "quota_exceeded" -> {
-                        val quota = obj.optInt("quota", 0)
-                        if (quota > 0) "Quota mensuel atteint ($quota corrections). Passez au plan Pro."
-                        else "Quota mensuel atteint. Passez au plan Pro."
-                    }
+                    // Message de repli : l'UI affiche en réalité un toast dédié
+                    // (toast_quota_reached) en se basant sur le code remonté.
+                    "quota_exceeded" -> "Quota de correction atteint."
                     "account_suspended" -> "Compte suspendu."
                     "billing_required" -> "Abonnement requis."
                     "correction_unavailable" -> "Service de correction temporairement indisponible."
