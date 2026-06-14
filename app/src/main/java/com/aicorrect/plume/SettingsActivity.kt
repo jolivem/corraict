@@ -1,8 +1,10 @@
 package com.aicorrect.plume
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.MenuItem
@@ -11,6 +13,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.switchmaterial.SwitchMaterial
@@ -81,6 +84,16 @@ class SettingsActivity : AppCompatActivity() {
                 Intent(this, LoginActivity::class.java)
                     .putExtra(LoginActivity.EXTRA_FORCE_LOGIN, true),
             )
+        }
+
+        // Lien vers le site : suivi de consommation et factures (ouvre le navigateur).
+        findViewById<MaterialButton>(R.id.buttonBilling).setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.settings_billing_url)))
+            try {
+                startActivity(intent)
+            } catch (e: ActivityNotFoundException) {
+                Toast.makeText(this, R.string.settings_billing_error, Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
