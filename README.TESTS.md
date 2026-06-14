@@ -18,9 +18,10 @@ Comment lancer les tests, et où ils s'exécutent.
 
 ---
 
-## Raccourci : tout lancer en local (Windows)
+## Raccourci : tout lancer en local build inclus (Windows)
 
 ```bat
+cd aicorrect
 firebase\run_tests_local.bat            REM unitaires PUIS instrumentes
 firebase\run_tests_local.bat unit       REM unitaires JVM seulement
 firebase\run_tests_local.bat instr      REM instrumentes seulement (appareil/emulateur requis)

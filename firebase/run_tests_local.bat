@@ -14,8 +14,8 @@ REM ====================================================================
 REM --- Tokens (optionnels) -------------------------------------------
 REM  Laisser vide => les tests qui en dependent sont IGNORES (pas en echec).
 REM  ACTIVE = compte abonne / compte de test ; NOSUB = compte gratuit sans abonnement.
-set AICORRECT_TOKEN_ACTIVE=
-set AICORRECT_TOKEN_NOSUB=
+set AICORRECT_TOKEN_ACTIVE=aic_xnjGDJcLNfQ5251nSmpUghwsblAKYrgZQsb6xTLnHbQ
+set AICORRECT_TOKEN_NOSUB=aic_k0Va1eTR31esii5iY8OnBL4PtfiH3MtjT2FzVSLsLC0
 
 REM --- Se placer a la racine du projet (ce script est dans firebase\) -
 pushd "%~dp0.."
