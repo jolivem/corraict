@@ -74,7 +74,8 @@
     <string name="settings_change_email">Changer d\'adresse e-mail</string>
     <string name="settings_account">Connecté : %1$s</string>
     <string name="settings_change_email_short">Changer</string>
-    <string name="settings_billing">Consommation et factures</string>
+    <string name="settings_billing">Gérer l\'abonnement</string>
+    <string name="settings_billing_desc">Accéder au site Plume-AiCorrect pour gérer votre abonnement, suivre votre consommation et consulter vos factures.</string>
     <string name="settings_billing_url">https://aicorrect.app</string>
     <string name="settings_billing_error">Aucune application pour ouvrir le lien.</string>
 </resources>
