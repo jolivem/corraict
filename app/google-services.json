@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "284817169861",
-    "project_id": "aicorrect2",
-    "storage_bucket": "aicorrect2.firebasestorage.app"
+    "project_number": "21842864766",
+    "project_id": "plume1-86d0e",
+    "storage_bucket": "plume1-86d0e.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:284817169861:android:226d9ba4ddbd60805cffac",
+        "mobilesdk_app_id": "1:21842864766:android:946415dd743e6298ea862f",
         "android_client_info": {
           "package_name": "com.aicorrect.plume"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAMQ3T_bfH2FG_bFIJcdZKHB51KFCxttyU"
+          "current_key": "AIzaSyCw9Z1w5gfJ-_VmMoocNtw7nKKPs-RRFj4"
         }
       ],
       "services": {

@@ -7,14 +7,22 @@ REM (ou : gradlew assembleDebug assembleDebugAndroidTest).
 REM Usage : double-clic, ou depuis cmd : firebase\run_test.bat
 REM ====================================================================
 
+REM --- Projet Firebase / Google Cloud --------------------------------
+REM  ID EXACT du projet (Firebase ajoute souvent un suffixe, ex. plume-1a2b3).
+REM  Verifie avec : gcloud projects list   ou la console Firebase.
+REM  Prerequis sur ce projet : facturation Blaze + APIs "Cloud Testing" et
+REM  "Cloud Tool Results" activees.
+set FIREBASE_PROJECT=plume1
+
 REM --- Tokens serveur -------------------------------------------------
 REM  AICORRECT_TOKEN_ACTIVE : compte ABONNE (ou compte de test TEST_LOGIN) -> la correction reussit.
 REM  AICORRECT_TOKEN_NOSUB  : compte GRATUIT ordinaire SANS abonnement -> popup "Veuillez vous abonner".
 REM  Les tests qui n'ont pas leur token sont ignores (assumeTrue), pas en echec.
 set AICORRECT_TOKEN_ACTIVE=aic_xnjGDJcLNfQ5251nSmpUghwsblAKYrgZQsb6xTLnHbQ
-set AICORRECT_TOKEN_NOSUB=
+set AICORRECT_TOKEN_NOSUB=aic_k0Va1eTR31esii5iY8OnBL4PtfiH3MtjT2FzVSLsLC0
 
 gcloud firebase test android run ^
+  --project %FIREBASE_PROJECT% ^
   --type instrumentation ^
   --app app\build\outputs\apk\debug\app-debug.apk ^
   --test app\build\outputs\apk\androidTest\debug\app-debug-androidTest.apk ^

@@ -80,6 +80,19 @@ Classes (`app/src/androidTest/.../`) :
   -Pandroid.testInstrumentationRunnerArguments.aicorrectTokenNoSub=aic_GRATUIT
 ```
 
+### Sur Firebase Test Lab
+créer le projet plume1 sans AI
+puis ajouter une application:
+plume1: Paramètres du projet: Paramètres généraux: Application Android
+puis nom du package: com.aicorrect.plume
+puis récupérer le google-service.json
+puis mettre le nom du prjet dans run_test.bat, variable FIREBASE_PROJECT=plume1
+puis :
+gcloud config set project plume1
+gcloud billing accounts list
+gcloud billing projects link plume1 --billing-account=XXXXXX-XXXXXX-XXXXXX
+si ne fonctionne pas, dans les paramètres plume1, remplacer le forfait Spark par le forfait Blaze
+
 ### Sur Firebase Test Lab (matrice multi-appareils)
 ```bash
 ./gradlew clean assembleDebug assembleDebugAndroidTest

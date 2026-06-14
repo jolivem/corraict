@@ -15,8 +15,15 @@ cd AndroidStudioProjects\aicorrect\
 .\gradlew.bat clean assembleDebug assembleDebugAndroidTest
 firebase\run_test.bat
 
-Voir résultats dans aicorrect2:
-https://console.firebase.google.com/u/0/project/aicorrect2/testlab/histories/bh.740deafcb288724b
+Voir résultats (projet plume) :
+https://console.firebase.google.com/project/plume/testlab/histories
+(remplacer "plume" par l'ID EXACT du projet — Firebase ajoute souvent un suffixe, ex. plume-1a2b3.)
+
+Bascule de aicorrect2 vers le nouveau projet :
+ - renseigner FIREBASE_PROJECT en haut de run_test.bat (le script passe deja --project),
+   ou bien : gcloud config set project plume
+ - prerequis sur le nouveau projet : facturation Blaze liee + APIs
+   "Cloud Testing" et "Cloud Tool Results" activees ; compte gcloud autorise.
 
 # Facturation Blaze (pay as you go)
 
