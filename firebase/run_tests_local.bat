@@ -39,7 +39,8 @@ echo ============================================================
 echo  2/2  Tests instrumentes  (connectedDebugAndroidTest)
 echo       Necessite un appareil / emulateur connecte :
 echo ============================================================
-adb devices
+REM Liste les appareils si adb est sur le PATH (sinon Gradle utilise son propre adb).
+where adb >nul 2>nul && adb devices
 echo.
 call gradlew.bat connectedDebugAndroidTest ^
   -Pandroid.testInstrumentationRunnerArguments.aicorrectTokenActive=%AICORRECT_TOKEN_ACTIVE% ^
