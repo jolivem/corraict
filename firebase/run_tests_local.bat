@@ -1,0 +1,65 @@
+@echo off
+setlocal
+REM ====================================================================
+REM Lance les tests Plume EN LOCAL (sur ta machine + un appareil/emulateur).
+REM
+REM Usage (depuis n'importe ou, double-clic possible) :
+REM   firebase\run_tests_local.bat            -> unitaires PUIS instrumentes
+REM   firebase\run_tests_local.bat unit       -> seulement les unitaires JVM
+REM   firebase\run_tests_local.bat instr      -> seulement les instrumentes
+REM
+REM Les tests instrumentes necessitent un appareil/emulateur connecte (adb).
+REM ====================================================================
+
+REM --- Tokens (optionnels) -------------------------------------------
+REM  Laisser vide => les tests qui en dependent sont IGNORES (pas en echec).
+REM  ACTIVE = compte abonne / compte de test ; NOSUB = compte gratuit sans abonnement.
+set AICORRECT_TOKEN_ACTIVE=
+set AICORRECT_TOKEN_NOSUB=
+
+REM --- Se placer a la racine du projet (ce script est dans firebase\) -
+pushd "%~dp0.."
+
+set MODE=%~1
+if "%MODE%"=="" set MODE=all
+
+if /I "%MODE%"=="instr" goto instrumented
+if /I "%MODE%"=="instrumented" goto instrumented
+
+echo ============================================================
+echo  1/2  Tests unitaires JVM  (testDebugUnitTest)
+echo ============================================================
+call gradlew.bat testDebugUnitTest
+if errorlevel 1 goto fail
+if /I "%MODE%"=="unit" goto done
+
+:instrumented
+echo.
+echo ============================================================
+echo  2/2  Tests instrumentes  (connectedDebugAndroidTest)
+echo       Necessite un appareil / emulateur connecte :
+echo ============================================================
+adb devices
+echo.
+call gradlew.bat connectedDebugAndroidTest ^
+  -Pandroid.testInstrumentationRunnerArguments.aicorrectTokenActive=%AICORRECT_TOKEN_ACTIVE% ^
+  -Pandroid.testInstrumentationRunnerArguments.aicorrectTokenNoSub=%AICORRECT_TOKEN_NOSUB% ^
+  -Pandroid.testInstrumentationRunnerArguments.aicorrectToken=%AICORRECT_TOKEN_ACTIVE%
+if errorlevel 1 goto fail
+
+:done
+echo.
+echo === TESTS OK ===
+echo Rapports HTML :
+echo   Unitaires    : app\build\reports\tests\testDebugUnitTest\index.html
+echo   Instrumentes : app\build\reports\androidTests\connected\debug\index.html
+popd
+endlocal
+exit /b 0
+
+:fail
+echo.
+echo *** ECHEC DES TESTS (voir la sortie ci-dessus) ***
+popd
+endlocal
+exit /b 1

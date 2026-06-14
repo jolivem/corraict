@@ -1136,13 +1136,13 @@ class CorrectKeyboardService : InputMethodService() {
         updateUndoEnabled()
         refreshSuggestions()
         result.errorMsg?.let { err ->
-            when (result.errorCode) {
+            when (correctionAction(result.errorCode)) {
                 // Pas d'abonnement actif : on invite à s'abonner (popup + lien site).
-                "billing_required" -> showSubscriptionDialog()
+                CorrectionAction.ShowSubscriptionDialog -> showSubscriptionDialog()
                 // Quota atteint (cas résiduel) : message dédié, sans préfixe « Échec… ».
-                "quota_exceeded" ->
+                CorrectionAction.ShowQuotaToast ->
                     Toast.makeText(this, R.string.toast_quota_reached, Toast.LENGTH_LONG).show()
-                else ->
+                CorrectionAction.ShowGenericFailure ->
                     Toast.makeText(
                         this,
                         "${getString(R.string.toast_correction_failed)} : $err",

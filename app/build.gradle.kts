@@ -46,7 +46,11 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.tink.android)
     testImplementation(libs.junit)
+    // Vrai org.json pour les tests unitaires JVM (sinon les stubs d'android.jar
+    // lèvent "not mocked" dès qu'on parse du JSON).
+    testImplementation("org.json:json:20240303")
     androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.espresso.intents)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.test.core)
     androidTestImplementation(libs.androidx.test.runner)

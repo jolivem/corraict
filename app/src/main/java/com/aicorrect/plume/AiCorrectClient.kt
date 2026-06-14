@@ -99,15 +99,19 @@ object AiCorrectClient {
         })
     }
 
-    /** Extrait le `code` métier du body d'erreur (ex. quota_exceeded), ou "". */
-    private fun parseErrorCode(raw: String): String =
+    /**
+     * Extrait le `code` métier du body d'erreur (ex. quota_exceeded), ou "".
+     * `internal` (et non `private`) pour être testable unitairement (JVM).
+     */
+    internal fun parseErrorCode(raw: String): String =
         try {
             JSONObject(raw).optString("code", "")
         } catch (_: Exception) {
             ""
         }
 
-    private fun parseErrorMessage(raw: String, httpCode: Int): String {
+    /** `internal` (et non `private`) pour être testable unitairement (JVM). */
+    internal fun parseErrorMessage(raw: String, httpCode: Int): String {
         if (raw.isBlank()) return "Erreur HTTP $httpCode"
         return try {
             val obj = JSONObject(raw)
