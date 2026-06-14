@@ -21,6 +21,9 @@ const envSchema = z.object({
   EMAIL_FROM: z.string().default('AiCorrect <no-reply@aicorrect.app>'),
 
   PUBLIC_WEB_URL: z.string().url().default('http://localhost:3001'),
+  // URL publique de cette API (api.aicorrect.app en prod). Sert à construire
+  // le lien de redemption renvoyé à l'app mobile pour la connexion web.
+  PUBLIC_API_URL: z.string().url().default('http://localhost:3000'),
 
   AUTH_CODE_TTL_SECONDS: z.coerce.number().int().positive().default(600),
   AUTH_CODE_LENGTH: z.coerce.number().int().min(4).max(10).default(6),
@@ -31,6 +34,9 @@ const envSchema = z.object({
   SESSION_TTL_SECONDS: z.coerce.number().int().positive().default(60 * 60 * 24 * 30),
   SESSION_COOKIE_NAME: z.string().default('aicorrect_session'),
   SESSION_COOKIE_DOMAIN: optionalSecret,
+  // Durée de vie du ticket de connexion web à usage unique (magic-link mobile).
+  // Court par sécurité : le temps que l'app ouvre le navigateur.
+  WEB_LOGIN_TICKET_TTL_SECONDS: z.coerce.number().int().positive().default(120),
 
   CORRECT_DEFAULT_MODEL: z.string().default('mistral-small-latest'),
   CORRECT_MAX_INPUT_CHARS: z.coerce.number().int().positive().default(5000),

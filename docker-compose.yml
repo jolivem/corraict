@@ -33,7 +33,11 @@ services:
       PORT: 3000
       DATABASE_URL: mysql://${MARIADB_USER:-aicorrect}:${MARIADB_PASSWORD}@mariadb:3306/${MARIADB_DATABASE:-aicorrect}
       PUBLIC_WEB_URL: ${PUBLIC_WEB_URL:-https://aicorrect.app}
+      # URL publique de l'API : sert à construire le lien de connexion web à
+      # usage unique renvoyé à l'app mobile (magic-link consommation/factures).
+      PUBLIC_API_URL: ${PUBLIC_API_URL:-https://api.aicorrect.app}
       SESSION_COOKIE_DOMAIN: ${SESSION_COOKIE_DOMAIN:-.aicorrect.app}
+      WEB_LOGIN_TICKET_TTL_SECONDS: ${WEB_LOGIN_TICKET_TTL_SECONDS:-120}
 
       MISTRAL_API_KEY: ${MISTRAL_API_KEY:?MISTRAL_API_KEY is required}
       CORRECT_DEFAULT_MODEL: ${CORRECT_DEFAULT_MODEL:-mistral-small-latest}

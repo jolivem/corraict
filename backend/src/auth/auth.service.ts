@@ -119,13 +119,24 @@ export class AuthService {
       create: { email: emailAddr, gdprConsentAt: new Date() },
     });
 
+    const { sessionToken, expiresAt } = await this.createSession(user.id, ctx);
+    return { sessionToken, userId: user.id, expiresAt };
+  }
+
+  /** Ouvre une session pour un user déjà identifié (login email ou magic-link
+   *  web) : crée la row Session + une trace d'audit. */
+  private async createSession(
+    userId: string,
+    ctx: { ip?: string; userAgent?: string },
+    action = 'auth.login',
+  ): Promise<{ sessionToken: string; expiresAt: Date }> {
     const sessionToken = this.generateOpaqueToken();
     const tokenHash = this.sha256(sessionToken);
     const expiresAt = new Date(Date.now() + this.env.SESSION_TTL_SECONDS * 1000);
 
     await this.prisma.session.create({
       data: {
-        userId: user.id,
+        userId,
         tokenHash,
         expiresAt,
         userAgent: ctx.userAgent?.slice(0, 512) ?? null,
@@ -135,14 +146,73 @@ export class AuthService {
 
     await this.prisma.auditLog.create({
       data: {
-        userId: user.id,
-        action: 'auth.login',
+        userId,
+        action,
         ip: ctx.ip ?? null,
         userAgent: ctx.userAgent?.slice(0, 512) ?? null,
       },
     });
 
-    return { sessionToken, userId: user.id, expiresAt };
+    return { sessionToken, expiresAt };
+  }
+
+  /**
+   * Magic-link mobile, étape 1 : l'app (authentifiée par son token d'API) demande
+   * un ticket de connexion web à usage unique. Le ticket brut n'est renvoyé
+   * qu'ici ; seul son hash est stocké.
+   */
+  async createWebLoginTicket(
+    userId: string,
+    ctx: { ip?: string; userAgent?: string },
+  ): Promise<{ ticket: string; expiresAt: Date }> {
+    const ticket = this.generateOpaqueToken();
+    const tokenHash = this.sha256(ticket);
+    const expiresAt = new Date(Date.now() + this.env.WEB_LOGIN_TICKET_TTL_SECONDS * 1000);
+
+    await this.prisma.webLoginTicket.create({
+      data: {
+        userId,
+        tokenHash,
+        expiresAt,
+        ip: ctx.ip ?? null,
+        userAgent: ctx.userAgent?.slice(0, 512) ?? null,
+      },
+    });
+
+    return { ticket, expiresAt };
+  }
+
+  /**
+   * Magic-link mobile, étape 2 : échange le ticket contre une vraie session web.
+   * Le ticket est consommé de façon atomique (updateMany sur usedAt=null) pour
+   * garantir l'usage unique même en cas de double clic. Renvoie null si le ticket
+   * est inconnu, expiré, déjà utilisé, ou si l'utilisateur n'est plus actif.
+   */
+  async redeemWebLoginTicket(
+    rawTicket: string,
+    ctx: { ip?: string; userAgent?: string },
+  ): Promise<{ sessionToken: string; expiresAt: Date; locale: string } | null> {
+    const tokenHash = this.sha256(rawTicket);
+
+    // Réclame le ticket atomiquement : seul le premier appel passe count=1.
+    const claim = await this.prisma.webLoginTicket.updateMany({
+      where: { tokenHash, usedAt: null, expiresAt: { gt: new Date() } },
+      data: { usedAt: new Date() },
+    });
+    if (claim.count === 0) return null;
+
+    const ticket = await this.prisma.webLoginTicket.findUnique({
+      where: { tokenHash },
+      include: { user: true },
+    });
+    if (!ticket || ticket.user.deletedAt || ticket.user.suspendedAt) return null;
+
+    const { sessionToken, expiresAt } = await this.createSession(
+      ticket.userId,
+      ctx,
+      'auth.web_session',
+    );
+    return { sessionToken, expiresAt, locale: ticket.user.locale };
   }
 
   /** Vrai si l'email correspond au compte de test configuré (TEST_LOGIN_EMAIL). */

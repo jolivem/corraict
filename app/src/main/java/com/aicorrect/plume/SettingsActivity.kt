@@ -86,14 +86,43 @@ class SettingsActivity : AppCompatActivity() {
             )
         }
 
-        // Lien vers le site : suivi de consommation et factures (ouvre le navigateur).
-        findViewById<MaterialButton>(R.id.buttonBilling).setOnClickListener {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.settings_billing_url)))
-            try {
-                startActivity(intent)
-            } catch (e: ActivityNotFoundException) {
-                Toast.makeText(this, R.string.settings_billing_error, Toast.LENGTH_SHORT).show()
+        // Lien vers le site : suivi de consommation et factures.
+        // Si l'appareil a un token, on demande un lien de connexion à usage unique
+        // pour arriver déjà authentifié ; sinon (ou en cas d'échec) on ouvre
+        // simplement le site, qui proposera la connexion.
+        val buttonBilling = findViewById<MaterialButton>(R.id.buttonBilling)
+        buttonBilling.setOnClickListener {
+            val token = EncryptedKeyStore.getServerToken(this)
+            if (token.isEmpty()) {
+                openUrl(getString(R.string.settings_billing_url))
+                return@setOnClickListener
             }
+            buttonBilling.isEnabled = false
+            AuthClient.createWebSession(
+                token,
+                onSuccess = { url ->
+                    runOnUiThread {
+                        buttonBilling.isEnabled = true
+                        openUrl(url)
+                    }
+                },
+                onError = {
+                    runOnUiThread {
+                        buttonBilling.isEnabled = true
+                        // Repli : ouvre le site sans connexion automatique.
+                        openUrl(getString(R.string.settings_billing_url))
+                    }
+                },
+            )
+        }
+    }
+
+    /** Ouvre une URL dans le navigateur, avec un message si aucune app ne peut. */
+    private fun openUrl(url: String) {
+        try {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(this, R.string.settings_billing_error, Toast.LENGTH_SHORT).show()
         }
     }
 

@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Query,
   Req,
   Res,
   UseGuards,
@@ -20,6 +21,7 @@ import {
   type VerifyCodeDto,
 } from './dto/auth.dto';
 import { SessionGuard } from './guards/session.guard';
+import { ApiTokenGuard } from './guards/api-token.guard';
 import { CurrentUser, type AuthPrincipal } from './decorators/current-user.decorator';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -54,6 +56,52 @@ export class AuthController {
     });
     this.setSessionCookie(res, result.sessionToken, result.expiresAt);
     return { userId: result.userId, email: body.email };
+  }
+
+  /**
+   * Magic-link mobile, étape 1 : l'app appelle cet endpoint avec son token d'API
+   * (Authorization: Bearer aic_…) et reçoit une URL de connexion web à usage
+   * unique, à ouvrir dans le navigateur. Le token d'API ne quitte jamais l'app.
+   */
+  @Post('web-session')
+  @HttpCode(HttpStatus.CREATED)
+  @UseGuards(ApiTokenGuard)
+  async createWebSession(
+    @CurrentUser() user: AuthPrincipal,
+    @Req() req: Request,
+  ): Promise<{ url: string; expiresAt: string }> {
+    const { ticket, expiresAt } = await this.auth.createWebLoginTicket(user.userId, {
+      ip: this.clientIp(req),
+      userAgent: req.headers['user-agent'],
+    });
+    const url = `${this.env.PUBLIC_API_URL}/v1/auth/web-session/redeem?ticket=${encodeURIComponent(ticket)}`;
+    return { url, expiresAt: expiresAt.toISOString() };
+  }
+
+  /**
+   * Magic-link mobile, étape 2 : ouverte dans le navigateur. Échange le ticket
+   * contre une session web (pose le cookie) puis redirige vers le tableau de bord.
+   * Ticket invalide/expiré → redirection vers l'accueil (qui proposera le login).
+   */
+  @Get('web-session/redeem')
+  async redeemWebSession(
+    @Query('ticket') ticket: string | undefined,
+    @Req() req: Request,
+    @Res() res: Response,
+  ): Promise<void> {
+    const result = ticket
+      ? await this.auth.redeemWebLoginTicket(ticket, {
+          ip: this.clientIp(req),
+          userAgent: req.headers['user-agent'],
+        })
+      : null;
+
+    if (!result) {
+      res.redirect(HttpStatus.FOUND, `${this.env.PUBLIC_WEB_URL}/`);
+      return;
+    }
+    this.setSessionCookie(res, result.sessionToken, result.expiresAt);
+    res.redirect(HttpStatus.FOUND, `${this.env.PUBLIC_WEB_URL}/${result.locale}/dashboard`);
   }
 
   @Post('logout')

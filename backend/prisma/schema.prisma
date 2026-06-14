@@ -39,6 +39,7 @@ model User {
 
   sessions          Session[]
   apiTokens         ApiToken[]
+  webLoginTickets   WebLoginTicket[]
   subscriptions     Subscription[]
   paymentMethods    PaymentMethod[]
   invoices          Invoice[]
@@ -97,6 +98,24 @@ model ApiToken {
   usageEvents UsageEvent[]
 
   @@index([userId])
+}
+
+// Ticket de connexion web à usage unique. Émis par l'app mobile avec son token
+// d'API (POST /v1/auth/web-session) pour ouvrir le dashboard déjà authentifié,
+// sans ressaisir le code email. Stocké hashé, courte durée, consommé une fois.
+model WebLoginTicket {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique @db.VarChar(255)
+  expiresAt DateTime
+  usedAt    DateTime?
+  ip        String?   @db.VarChar(45)
+  userAgent String?   @db.VarChar(512)
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 enum SubscriptionStatus {

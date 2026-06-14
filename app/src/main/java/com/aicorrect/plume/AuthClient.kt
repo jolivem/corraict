@@ -49,6 +49,47 @@ object AuthClient {
         override fun loadForRequest(url: HttpUrl): List<Cookie> = store.toList()
     }
 
+    /**
+     * Demande une URL de connexion web à usage unique pour ouvrir le site déjà
+     * authentifié (suivi de consommation et factures). L'app s'authentifie avec
+     * son token d'API (Bearer), qui ne quitte jamais l'appareil ; seul le lien
+     * éphémère renvoyé est ouvert dans le navigateur.
+     *
+     * Callback appelé depuis un thread OkHttp : repasser sur l'UI côté appelant.
+     */
+    fun createWebSession(
+        token: String,
+        onSuccess: (String) -> Unit,
+        onError: (String) -> Unit,
+    ) {
+        val request = Request.Builder()
+            .url("$BASE_URL/v1/auth/web-session")
+            .addHeader("Authorization", "Bearer $token")
+            .post("{}".toRequestBody(JSON))
+            .build()
+
+        plainClient.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                onError("network")
+            }
+            override fun onResponse(call: Call, response: Response) {
+                response.use {
+                    val raw = it.body?.string().orEmpty()
+                    if (!it.isSuccessful) {
+                        onError(errorKey(raw, it.code))
+                        return
+                    }
+                    val url = try {
+                        JSONObject(raw).optString("url", "")
+                    } catch (_: Exception) {
+                        ""
+                    }
+                    if (url.startsWith("http")) onSuccess(url) else onError("generic")
+                }
+            }
+        })
+    }
+
     /** Étape 1 : demande l'envoi du code à 6 chiffres par email. */
     fun requestCode(
         email: String,
