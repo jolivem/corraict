@@ -11,11 +11,13 @@ REM
 REM Les tests instrumentes necessitent un appareil/emulateur connecte (adb).
 REM ====================================================================
 
-REM --- Tokens (optionnels) -------------------------------------------
+REM --- Tokens (secrets LOCAUX, non commites) -------------------------
+REM  Copier firebase\secrets.local.bat.example en firebase\secrets.local.bat
+REM  et y mettre les vrais tokens (ce fichier est gitignore).
 REM  Laisser vide => les tests qui en dependent sont IGNORES (pas en echec).
-REM  ACTIVE = compte abonne / compte de test ; NOSUB = compte gratuit sans abonnement.
-set AICORRECT_TOKEN_ACTIVE=aic_xnjGDJcLNfQ5251nSmpUghwsblAKYrgZQsb6xTLnHbQ
-set AICORRECT_TOKEN_NOSUB=aic_k0Va1eTR31esii5iY8OnBL4PtfiH3MtjT2FzVSLsLC0
+set AICORRECT_TOKEN_ACTIVE=
+set AICORRECT_TOKEN_NOSUB=
+if exist "%~dp0secrets.local.bat" call "%~dp0secrets.local.bat"
 
 REM --- Se placer a la racine du projet (ce script est dans firebase\) -
 pushd "%~dp0.."

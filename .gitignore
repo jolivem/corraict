@@ -26,5 +26,8 @@ coverage/
 .env.*.local
 *.log
 
+## Secrets de test locaux (tokens aic_ pour Firebase) — ne jamais commiter
+firebase/secrets.local.bat
+
 ## Misc
 .vscode/

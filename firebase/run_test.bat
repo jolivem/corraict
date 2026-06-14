@@ -14,13 +14,18 @@ REM  Prerequis sur ce projet : facturation Blaze + APIs "Cloud Testing" et
 REM  "Cloud Tool Results" activees.
 set FIREBASE_PROJECT=plume1-86d0e
 
-REM --- Tokens serveur -------------------------------------------------
-REM  AICORRECT_TOKEN_ACTIVE : compte ABONNE (ou compte de test TEST_LOGIN) -> la correction reussit.
-REM  AICORRECT_TOKEN_NOSUB  : compte GRATUIT ordinaire SANS abonnement -> popup "Veuillez vous abonner".
+REM --- Tokens serveur (secrets LOCAUX, non commites) -----------------
+REM  Copier firebase\secrets.local.bat.example en firebase\secrets.local.bat
+REM  et y mettre les vrais tokens (ce fichier est gitignore).
 REM  Les tests qui n'ont pas leur token sont ignores (assumeTrue), pas en echec.
-set AICORRECT_TOKEN_ACTIVE=aic_xnjGDJcLNfQ5251nSmpUghwsblAKYrgZQsb6xTLnHbQ
-set AICORRECT_TOKEN_NOSUB=aic_k0Va1eTR31esii5iY8OnBL4PtfiH3MtjT2FzVSLsLC0
+set AICORRECT_TOKEN_ACTIVE=
+set AICORRECT_TOKEN_NOSUB=
+if exist "%~dp0secrets.local.bat" call "%~dp0secrets.local.bat"
 
+REM Derniere ligne --device = TABLETTE (grand ecran) : valide la mise en page
+REM clavier + popups. gts4lvwifi = Samsung Galaxy Tab S5e (appareil PHYSIQUE ->
+REM plus couteux/lent). Verifie la dispo / change le modele si besoin :
+REM   gcloud firebase test android models list   (colonne FORM = TABLET)
 gcloud firebase test android run ^
   --project %FIREBASE_PROJECT% ^
   --type instrumentation ^
@@ -31,6 +36,6 @@ gcloud firebase test android run ^
   --timeout 8m ^
   --device model=MediumPhone.arm,version=35,locale=fr,orientation=portrait ^
   --device model=MediumPhone.arm,version=30,locale=fr,orientation=portrait ^
-  --device model=MediumPhone.arm,version=28,locale=fr,orientation=portrait
-
+  --device model=MediumPhone.arm,version=28,locale=fr,orientation=portrait 
+  
 pause
