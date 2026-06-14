@@ -12,7 +12,7 @@ REM  ID EXACT du projet (Firebase ajoute souvent un suffixe, ex. plume-1a2b3).
 REM  Verifie avec : gcloud projects list   ou la console Firebase.
 REM  Prerequis sur ce projet : facturation Blaze + APIs "Cloud Testing" et
 REM  "Cloud Tool Results" activees.
-set FIREBASE_PROJECT=plume1
+set FIREBASE_PROJECT=plume1-86d0e
 
 REM --- Tokens serveur -------------------------------------------------
 REM  AICORRECT_TOKEN_ACTIVE : compte ABONNE (ou compte de test TEST_LOGIN) -> la correction reussit.

@@ -88,6 +88,7 @@ puis nom du package: com.aicorrect.plume
 puis récupérer le google-service.json
 puis mettre le nom du prjet dans run_test.bat, variable FIREBASE_PROJECT=plume1
 puis :
+gcloud projects list pour avoir l ID, par exemple plume1-86d0e
 gcloud config set project plume1
 gcloud billing accounts list
 gcloud billing projects link plume1 --billing-account=XXXXXX-XXXXXX-XXXXXX
