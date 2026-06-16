@@ -9,9 +9,11 @@ import { TermsAcceptDialog } from '@/components/TermsAcceptDialog';
 export function BillingActions({
   hasSubscription,
   unavailableLabel,
+  cancelLabel,
 }: {
   hasSubscription: boolean;
   unavailableLabel: string;
+  cancelLabel?: string;
 }) {
   const t = useTranslations('Dashboard');
   const locale = useLocale();
@@ -111,6 +113,16 @@ export function BillingActions({
       >
         {hasSubscription ? t('subscriptionManage') : t('subscriptionSubscribe')}
       </button>
+      {hasSubscription && cancelLabel && (
+        <button
+          type="button"
+          disabled={pending}
+          onClick={() => handleClick('portal')}
+          className="text-sm font-medium text-muted underline underline-offset-2 hover:text-danger disabled:opacity-50"
+        >
+          {cancelLabel}
+        </button>
+      )}
       {error && <p className="text-sm text-danger">{error}</p>}
       {pendingTerms && (
         <TermsAcceptDialog

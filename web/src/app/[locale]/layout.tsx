@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 import { Link, routing } from '@/i18n/routing';
 import { LocaleSwitcher } from '@/components/LocaleSwitcher';
 import { HeaderAuth } from '@/components/HeaderAuth';
+import { HeaderNav } from '@/components/HeaderNav';
 import { SiteFooter } from '@/components/SiteFooter';
 
 export function generateStaticParams() {
@@ -52,9 +53,12 @@ export default async function LocaleLayout({
             >
               {t('appName')}
             </Link>
-            <HeaderAuth />
+            <HeaderNav />
           </div>
-          <LocaleSwitcher />
+          <div className="flex items-center gap-3">
+            <HeaderAuth />
+            <LocaleSwitcher />
+          </div>
         </div>
       </header>
 
