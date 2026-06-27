@@ -22,12 +22,10 @@
     <string name="label_mode">Mode de correction</string>
     <string name="mode_direct_mistral">Direct (clé Mistral)</string>
     <string name="mode_server">Serveur Plume (abonnement)</string>
-    <string name="label_server_token">Token Plume</string>
-    <string name="hint_server_token">aic_…  (créé depuis le dashboard web)</string>
     <string name="section_direct">Configuration mode direct</string>
     <string name="section_server">Avancé</string>
-    <string name="toast_no_server_token">Aucun token Plume configuré</string>
-    <string name="dialog_missing_token_message">Pour utiliser le mode serveur, inscrivez-vous sur https://aicorrect.app puis générez un token API depuis votre tableau de bord et collez-le dans les paramètres du clavier.</string>
+    <string name="toast_no_server_token">Connectez-vous pour utiliser Plume</string>
+    <string name="dialog_missing_token_message">Pour utiliser Plume, connectez-vous avec votre adresse email : vous recevrez un code à 6 chiffres pour activer la correction.</string>
     <string name="dialog_open_website">Ouvrir le site</string>
     <string name="dialog_close">Fermer</string>
     <string name="toast_no_api_key">Aucune clé API configurée</string>
