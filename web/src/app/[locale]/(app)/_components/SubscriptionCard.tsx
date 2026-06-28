@@ -57,10 +57,6 @@ export async function SubscriptionCard({
         <div className="mt-4 flex flex-wrap items-start justify-between gap-3">
           <div className="text-sm text-body">
             <p>
-              <span className="text-muted">{t('subscriptionPlan')} : </span>
-              <span className="font-medium text-ink">{sub.plan}</span>
-            </p>
-            <p className="mt-1">
               <span className="text-muted">{t('subscriptionStatus')} : </span>
               <span className="font-medium text-ink">{statusLabels[statusKey] ?? statusKey}</span>
             </p>

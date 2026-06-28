@@ -47,11 +47,20 @@ export function BillingActions({
         }
       }
 
+      // Chemins de retour Stripe préfixés par la locale (localePrefix: 'always'),
+      // sinon le retour atterrit sur une URL sans locale → 404.
+      const body =
+        action === 'checkout'
+          ? {
+              successPath: `/${locale}/billing/success`,
+              cancelPath: `/${locale}/billing/cancel`,
+            }
+          : {};
       const res = await fetch(`${apiUrl()}/v1/billing/${action}`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
+        body: JSON.stringify(body),
       });
       // Backend renvoie 400 terms_not_accepted en garde-fou si on l'a manqué côté front
       if (res.status === 400) {

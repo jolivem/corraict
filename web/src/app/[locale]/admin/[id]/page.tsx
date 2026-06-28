@@ -63,7 +63,7 @@ export default async function AdminUserDetailPage({
 
       <section className="grid gap-4 sm:grid-cols-2">
         <Field label={t('fieldRole')} value={user.role} />
-        <Field label={t('fieldPlan')} value={user.plan} />
+        <Field label={t('fieldPlan')} value={user.plan === 'PRO' ? t('planPro') : t('planFree')} />
         <Field
           label={t('fieldEffectiveQuota')}
           value={user.effectiveQuota === null ? t('quotaUnlimited') : String(user.effectiveQuota)}
@@ -135,7 +135,7 @@ export default async function AdminUserDetailPage({
             {user.subscriptions.map((s) => (
               <li key={s.id} className="rounded border border-gray-100 p-3">
                 <p className="font-medium text-gray-900">
-                  {s.plan} · {s.status}
+                  {s.status}
                 </p>
                 <p className="mt-1 text-xs text-gray-500">
                   {format.dateTime(new Date(s.currentPeriodStart), { dateStyle: 'medium' })}
