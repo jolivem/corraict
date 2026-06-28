@@ -103,6 +103,18 @@ export class AdminController {
     await this.admin.setQuota(id, body.monthlyRequestQuota, actor.userId, this.clientIp(req));
   }
 
+  // Suppression DÉFINITIVE du compte (hard delete, irréversible). Distinct du
+  // self-delete RGPD : efface la row User + cascade. Surtout utile pour les tests.
+  @Delete('users/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteUser(
+    @Param('id') id: string,
+    @CurrentUser() actor: AuthPrincipal,
+    @Req() req: Request,
+  ): Promise<void> {
+    await this.admin.hardDeleteUser(id, actor.userId, this.clientIp(req));
+  }
+
   // ─── Terms versions (CGU) ────────────────────────────────────────────────
 
   @Get('terms')

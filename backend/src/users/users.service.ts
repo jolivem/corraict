@@ -71,7 +71,7 @@ export class UsersService {
     return {
       exportedAt: new Date().toISOString(),
       note:
-        'Texts submitted for correction are never stored by AiCorrect. This export only contains account metadata.',
+        'Texts submitted for correction are never stored by Plume-AiCorrect. This export only contains account metadata.',
       profile: user,
       sessions,
       apiTokens,

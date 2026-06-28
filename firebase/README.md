@@ -32,7 +32,7 @@ gcloud billing accounts list
 gcloud billing projects link TON_PROJET --billing-account=XXXXXX-XXXXXX-XXXXXX
 
 
-# Tests Firebase Test Lab — clavier AiCorrect
+# Tests Firebase Test Lab — clavier Plume-AiCorrect
 
 Deux approches complémentaires. **Pour réellement tester la correction du clavier,
 utilisez le test instrumenté** ; le script Robo ne couvre que le parcours de l'app.
@@ -60,7 +60,7 @@ Classes (`app/src/androidTest/.../`) :
 
 Tous partent dans l'APK `androidTest` → ils tournent **tous sur Firebase Test Lab**, sur chaque
 appareil de la matrice. (Les tests unitaires JVM dans `app/src/test` — `LanguageDefaultsTest`,
-`AiCorrectErrorParsingTest`, `CorrectionActionTest` — ne tournent **pas** sur FTL : ils sont
+`Plume-AiCorrectErrorParsingTest`, `CorrectionActionTest` — ne tournent **pas** sur FTL : ils sont
 host-side, à lancer via `./gradlew testDebugUnitTest`.)
 
 Args d'instrumentation (token absent ⇒ test **ignoré** via `assumeTrue`, pas en échec) :

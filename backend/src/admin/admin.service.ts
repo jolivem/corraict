@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import { loadEnv } from '../config/env';
 import { PrismaService } from '../prisma/prisma.service';
@@ -75,6 +75,10 @@ export class AdminService {
       where.email = { contains: query.q.toLowerCase() };
     }
     switch (query.status) {
+      case 'live':
+        // Actifs + suspendus : on exclut seulement les comptes supprimés.
+        where.deletedAt = null;
+        break;
       case 'active':
         where.suspendedAt = null;
         where.deletedAt = null;
@@ -274,6 +278,41 @@ export class AdminService {
           action: 'admin.user.plan.change',
           ip,
           metadata: { targetUserId, from: before.plan, to: plan },
+        },
+      }),
+    ]);
+  }
+
+  /**
+   * Suppression DÉFINITIVE (hard delete) d'un compte et de toutes ses données.
+   * Contrairement au self-delete RGPD (`deletedAt`, soft delete), cette action
+   * efface la row `User` ; les relations en `onDelete: Cascade` (sessions, tokens,
+   * subscriptions, paymentMethods, invoices, usageEvents, usageMonthly,
+   * termsAcceptances, webLoginTickets) sont supprimées par la base. Les AuditLog
+   * de la cible passent en `userId = null` (onDelete: SetNull) et restent.
+   * Principalement utile pour nettoyer des comptes de test.
+   */
+  async hardDeleteUser(
+    targetUserId: string,
+    actorUserId: string,
+    ip: string | null,
+  ): Promise<void> {
+    if (targetUserId === actorUserId) {
+      throw new BadRequestException('Cannot delete your own admin account.');
+    }
+    const user = await this.prisma.user.findUnique({
+      where: { id: targetUserId },
+      select: { email: true },
+    });
+    if (!user) throw new NotFoundException('User not found');
+    await this.prisma.$transaction([
+      this.prisma.user.delete({ where: { id: targetUserId } }),
+      this.prisma.auditLog.create({
+        data: {
+          userId: actorUserId,
+          action: 'admin.user.delete.hard',
+          ip,
+          metadata: { targetUserId, email: user.email },
         },
       }),
     ]);

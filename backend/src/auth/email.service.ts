@@ -12,11 +12,11 @@ export class EmailService {
 
   async sendAuthCode(email: string, code: string, locale: 'fr' | 'en' = 'fr'): Promise<void> {
     const subject =
-      locale === 'en' ? 'Your AiCorrect verification code' : 'Votre code de connexion AiCorrect';
+      locale === 'en' ? 'Your Plume-AiCorrect verification code' : 'Votre code de connexion Plume-AiCorrect';
     const intro =
       locale === 'en'
-        ? `Use this code to sign in to AiCorrect:`
-        : `Utilisez ce code pour vous connecter à AiCorrect :`;
+        ? `Use this code to sign in to Plume-AiCorrect:`
+        : `Utilisez ce code pour vous connecter à Plume-AiCorrect :`;
     const note =
       locale === 'en'
         ? `This code expires in ${Math.round(this.env.AUTH_CODE_TTL_SECONDS / 60)} minutes. If you did not request it, ignore this email.`
@@ -32,7 +32,7 @@ export class EmailService {
 
     const html = `
       <div style="font-family: system-ui, sans-serif; max-width: 480px; margin: 0 auto;">
-        <h2 style="color: #111;">AiCorrect</h2>
+        <h2 style="color: #111;">Plume-AiCorrect</h2>
         <p>${intro}</p>
         <p style="font-size: 32px; font-weight: 700; letter-spacing: 6px; text-align: center; background: #f4f4f5; padding: 16px; border-radius: 8px;">
           ${code}

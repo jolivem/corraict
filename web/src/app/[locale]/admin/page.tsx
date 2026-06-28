@@ -28,9 +28,9 @@ export default async function AdminUsersPage({
   const sp = await searchParams;
   const q = (sp.q ?? '').trim();
   const page = Math.max(1, Number(sp.page ?? '1') || 1);
-  const status = ['all', 'active', 'suspended', 'deleted'].includes(sp.status ?? '')
-    ? (sp.status as 'all' | 'active' | 'suspended' | 'deleted')
-    : 'active';
+  const status = ['all', 'live', 'active', 'suspended', 'deleted'].includes(sp.status ?? '')
+    ? (sp.status as 'all' | 'live' | 'active' | 'suspended' | 'deleted')
+    : 'live';
 
   const qs = new URLSearchParams({ page: String(page), status });
   if (q) qs.set('q', q);
@@ -110,6 +110,7 @@ export default async function AdminUsersPage({
           defaultValue={status}
           className="rounded border border-gray-300 px-3 py-2 text-sm"
         >
+          <option value="live">{t('statusLive')}</option>
           <option value="active">{t('statusActive')}</option>
           <option value="suspended">{t('statusSuspended')}</option>
           <option value="deleted">{t('statusDeleted')}</option>

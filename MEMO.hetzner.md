@@ -38,7 +38,7 @@ docker compose up -d
 
 ---
 
-## Rétention des données (AiCorrect)
+## Rétention des données (Plume-AiCorrect)
 
 ### `UsageEvent` (rows bruts, 1 par appel `/v1/correct`)
 

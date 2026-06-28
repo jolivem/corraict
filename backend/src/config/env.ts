@@ -18,7 +18,7 @@ const envSchema = z.object({
   STRIPE_PRO_PRICE_ID: optionalSecret,
 
   RESEND_API_KEY: optionalSecret,
-  EMAIL_FROM: z.string().default('AiCorrect <no-reply@aicorrect.app>'),
+  EMAIL_FROM: z.string().default('Plume-AiCorrect <no-reply@aicorrect.app>'),
 
   PUBLIC_WEB_URL: z.string().url().default('http://localhost:3001'),
   // URL publique de cette API (api.aicorrect.app en prod). Sert à construire

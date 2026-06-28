@@ -99,6 +99,8 @@ export default async function AdminUserDetailPage({
         <div className="mt-4">
           <AdminActions
             userId={user.id}
+            email={user.email}
+            isSelf={me.userId === user.id}
             suspendedAt={user.suspendedAt}
             currentPlan={user.plan}
             currentQuotaOverride={user.monthlyRequestQuota}

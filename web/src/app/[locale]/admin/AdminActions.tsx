@@ -7,12 +7,21 @@ import { apiUrl } from '@/lib/api';
 
 interface Props {
   userId: string;
+  email: string;
+  isSelf: boolean;
   suspendedAt: string | null;
   currentPlan: 'FREE' | 'PRO';
   currentQuotaOverride: number | null;
 }
 
-export function AdminActions({ userId, suspendedAt, currentPlan, currentQuotaOverride }: Props) {
+export function AdminActions({
+  userId,
+  email,
+  isSelf,
+  suspendedAt,
+  currentPlan,
+  currentQuotaOverride,
+}: Props) {
   const t = useTranslations('Admin');
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -71,6 +80,25 @@ export function AdminActions({ userId, suspendedAt, currentPlan, currentQuotaOve
           body: JSON.stringify({ plan }),
         });
         refresh();
+      } catch {
+        /* error already surfaced */
+      }
+    });
+  }
+
+  function hardDelete() {
+    // Confirmation forte : l'admin doit retaper l'email exact du compte.
+    const entered = prompt(t('confirmHardDelete', { email }));
+    if (entered === null) return;
+    if (entered.trim() !== email) {
+      setError(t('hardDeleteMismatch'));
+      return;
+    }
+    startTransition(async () => {
+      try {
+        await call(`/v1/admin/users/${userId}`, { method: 'DELETE' });
+        // Le compte n'existe plus : on retourne à la liste.
+        router.push('/admin');
       } catch {
         /* error already surfaced */
       }
@@ -157,6 +185,21 @@ export function AdminActions({ userId, suspendedAt, currentPlan, currentQuotaOve
         >
           {t('quotaApply')}
         </button>
+      </div>
+
+      <div className="border-t border-gray-100 pt-4">
+        <button
+          type="button"
+          onClick={hardDelete}
+          disabled={pending || isSelf}
+          title={isSelf ? t('hardDeleteSelfHint') : undefined}
+          className="rounded bg-red-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-800 disabled:opacity-50"
+        >
+          {t('actionHardDelete')}
+        </button>
+        <p className="mt-1 text-xs text-gray-500">
+          {isSelf ? t('hardDeleteSelfHint') : t('hardDeleteHint')}
+        </p>
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}

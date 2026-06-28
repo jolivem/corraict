@@ -1,4 +1,4 @@
-# AiCorrect
+# Plume-AiCorrect
 
 Correction orthographique et grammaticale par IA, accessible depuis n'importe quel champ de saisie Android, et pilotée par un backend web sur le domaine **aicorrect.app**.
 
@@ -71,7 +71,7 @@ Voir [`app/`](app/) — projet Android Studio standard (`build.gradle.kts`).
 
 ## Déploiement (VPS Hetzner)
 
-AiCorrect est déployé sur le **même VPS** que [clairimmo](https://github.com/jolivem/clairimmo). Les deux stacks Docker se partagent le reverse-proxy Caddy de clairimmo via un network Docker externe `caddy_network`.
+Plume-AiCorrect est déployé sur le **même VPS** que [clairimmo](https://github.com/jolivem/clairimmo). Les deux stacks Docker se partagent le reverse-proxy Caddy de clairimmo via un network Docker externe `caddy_network`.
 
 ```
                  ┌──────────────────────────────────────────────┐
@@ -164,7 +164,7 @@ Voir [`.env.example`](.env.example) pour la liste complète. À retenir :
 ## Décisions structurantes
 
 - **Auth** : code à 6 chiffres envoyé par email (pas de mot de passe). Token long-lived révocable pour Android, transmis via QR-code depuis le dashboard.
-- **Paiement** : Stripe Subscriptions. Aucune donnée de carte n'est stockée côté AiCorrect.
+- **Paiement** : Stripe Subscriptions. Aucune donnée de carte n'est stockée côté Plume-AiCorrect.
 - **Plans** : Pro uniquement au lancement, essai gratuit 7 jours.
 - **RGPD** : minimisation (jamais de stockage du texte corrigé), export et suppression de compte depuis le dashboard.
 

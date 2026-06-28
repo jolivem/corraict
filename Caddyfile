@@ -1,4 +1,4 @@
-# Caddyfile — VPS dédié AiCorrect.
+# Caddyfile — VPS dédié Plume-AiCorrect.
 #
 # Caddy gère automatiquement les certificats Let's Encrypt si :
 #   - les enregistrements DNS A/AAAA de aicorrect.app, api.aicorrect.app,

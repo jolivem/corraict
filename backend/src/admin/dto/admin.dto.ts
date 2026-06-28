@@ -4,7 +4,8 @@ export const ListUsersQuerySchema = z.object({
   q: z.string().trim().min(1).max(255).optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
-  status: z.enum(['all', 'active', 'suspended', 'deleted']).default('active'),
+  // 'live' = actifs + suspendus (tout sauf supprimés) — vue par défaut.
+  status: z.enum(['all', 'live', 'active', 'suspended', 'deleted']).default('live'),
 });
 export type ListUsersQuery = z.infer<typeof ListUsersQuerySchema>;
 
