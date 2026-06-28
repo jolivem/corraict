@@ -5,7 +5,9 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Patterns
+import android.view.KeyEvent
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.button.MaterialButton
@@ -68,6 +70,21 @@ class LoginActivity : AppCompatActivity() {
 
         buttonSendCode.setOnClickListener { onSendCode() }
         buttonVerify.setOnClickListener { onVerify() }
+        // Valider directement depuis la touche « OK » du clavier, sans presser
+        // le bouton « Valider ». On ne déclenche que si la saisie du code est
+        // active (bouton activé après l'envoi du code).
+        editCode.setOnEditorActionListener { _, actionId, event ->
+            val pressedDone = actionId == EditorInfo.IME_ACTION_DONE ||
+                (event != null &&
+                    event.keyCode == KeyEvent.KEYCODE_ENTER &&
+                    event.action == KeyEvent.ACTION_DOWN)
+            if (pressedDone && buttonVerify.isEnabled) {
+                onVerify()
+                true
+            } else {
+                false
+            }
+        }
         findViewById<MaterialButton>(R.id.buttonAdvanced).setOnClickListener { openSettings() }
 
         buttonActivateKeyboard = findViewById(R.id.buttonActivateKeyboard)

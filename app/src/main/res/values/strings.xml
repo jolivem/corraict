@@ -65,8 +65,8 @@
     <string name="login_choose_keyboard">2 · Choisir Plume comme clavier</string>
     <string name="login_ime_enabled">✓ Clavier activé</string>
     <string name="login_ime_selected">✓ Plume est votre clavier</string>
-    <string name="login_ready">Le clavier Plume est prêt 🎉 Vous pouvez l\'utiliser partout.</string>
-    <string name="login_go_settings">Paramètres avancés</string>
+    <string name="login_ready">Le clavier Plume est prêt 🎉</string>
+    <string name="login_go_settings">Abonnement période d\'essai et paramètres avancés</string>
     <string name="login_error_email">Saisissez une adresse email valide.</string>
     <string name="login_error_code">Code invalide ou expiré.</string>
     <string name="login_error_rate">Trop de tentatives. Réessayez dans quelques minutes.</string>
