@@ -18,7 +18,8 @@ REM  Laisser vide => les tests qui en dependent sont IGNORES (pas en echec).
 set AICORRECT_TOKEN_ACTIVE=
 set AICORRECT_TOKEN_NOSUB=
 if exist "%~dp0secrets.local.bat" call "%~dp0secrets.local.bat"
-
+echo AICORRECT_TOKEN_ACTIVE=%AICORRECT_TOKEN_ACTIVE%
+echo AICORRECT_TOKEN_NOSUB=%AICORRECT_TOKEN_NOSUB%
 REM --- Se placer a la racine du projet (ce script est dans firebase\) -
 pushd "%~dp0.."
 
