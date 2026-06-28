@@ -45,4 +45,4 @@ docker build \
 echo "==> Push web"
 docker push "$WEB_IMAGE:$TAG"
 
-echo "==> Done. Pull on VPS via : docker compose pull && ./update.sh"
+echo "==> Done. Update on VPS via :  ./update.sh"
