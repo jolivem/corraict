@@ -59,10 +59,10 @@ export default async function LocaleLayout({
             <HeaderNav />
           </div>
           <div className="flex items-center gap-3">
-            {/* Sur mobile, « Se déconnecter » est dans le menu hamburger (HeaderNav). */}
-            <div className="hidden sm:block">
-              <HeaderAuth />
-            </div>
+            {/* HeaderAuth gère lui-même le responsive : « Se connecter » (déconnecté,
+                toutes tailles) ou « Se déconnecter » (connecté, desktop ; le mobile
+                l'a dans le menu hamburger de HeaderNav). */}
+            <HeaderAuth />
             <LocaleSwitcher />
           </div>
         </div>

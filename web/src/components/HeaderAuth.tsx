@@ -2,19 +2,22 @@
 
 import { useEffect, useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
-import { useRouter } from '@/i18n/routing';
+import { Link, useRouter } from '@/i18n/routing';
 import { apiUrl } from '@/lib/api';
 
 /**
- * Îlot client affiché dans le header : montre « Se déconnecter » uniquement
- * quand une session est active, et rien sinon. Étant un composant client, il
- * n'empêche pas la génération statique des pages (le layout reste statique ;
- * la vérification de session se fait côté navigateur après hydratation).
+ * Îlot client du header. Selon l'état de session (vérifié côté navigateur) :
+ *  - déconnecté → lien « Se connecter » (visible sur toutes les tailles : un
+ *    visiteur déconnecté n'a pas de menu hamburger) ;
+ *  - connecté → bouton « Se déconnecter », masqué sur mobile car déjà présent
+ *    dans le menu hamburger (HeaderNav), visible sur desktop.
+ * Étant un composant client, il n'empêche pas la génération statique du layout.
  */
 export function HeaderAuth() {
   const t = useTranslations('Common');
   const router = useRouter();
-  const [authed, setAuthed] = useState(false);
+  // null = session encore inconnue (évite un flash « Se connecter » / « Se déconnecter »).
+  const [authed, setAuthed] = useState<boolean | null>(null);
   const [pending, startTransition] = useTransition();
 
   useEffect(() => {
@@ -31,7 +34,18 @@ export function HeaderAuth() {
     };
   }, []);
 
-  if (!authed) return null;
+  if (authed === null) return null;
+
+  if (!authed) {
+    return (
+      <Link
+        href="/login"
+        className="rounded-lg border border-line px-3 py-1.5 text-sm font-medium text-body hover:bg-surface-muted"
+      >
+        {t('ctaLogin')}
+      </Link>
+    );
+  }
 
   return (
     <button
@@ -48,7 +62,7 @@ export function HeaderAuth() {
           router.refresh();
         });
       }}
-      className="rounded-lg border border-line px-3 py-1.5 text-sm font-medium text-body hover:bg-surface-muted disabled:opacity-50"
+      className="hidden rounded-lg border border-line px-3 py-1.5 text-sm font-medium text-body hover:bg-surface-muted disabled:opacity-50 sm:block"
     >
       {pending ? t('loading') : t('logout')}
     </button>

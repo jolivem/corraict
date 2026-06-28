@@ -2,7 +2,7 @@
   "Common": {
     "appName": "Plume-AiCorrect",
     "tagline": "Correction orthographique et grammaticale par IA, partout sur Android.",
-    "ctaLogin": "Connexion",
+    "ctaLogin": "Se connecter",
     "ctaTryFree": "Essayer 15 jours gratuits",
     "faq": "FAQ",
     "about": "À propos",
@@ -34,6 +34,7 @@
   "Landing": {
     "heroTitle": "Écrivez sans fautes,\nsans changer votre style.",
     "heroSubtitle": "Un clavier Android qui corrige vos messages, mails et notes en un appui. Aucune reformulation, juste l'orthographe et la grammaire.",
+    "alreadySubscribed": "Déjà un compte ? Se connecter",
     "feature1Title": "Correction stricte",
     "feature1Body": "Notre IA corrige uniquement les fautes : pas de reformulation, pas de changement de ton.",
     "feature2Title": "Partout sur Android",

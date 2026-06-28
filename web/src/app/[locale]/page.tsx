@@ -56,12 +56,20 @@ export default async function LandingPage({
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-lg text-muted">{t('heroSubtitle')}</p>
         <div className="mt-10 flex flex-col items-center gap-5">
-          <Link
-            href="/login"
-            className="rounded-lg bg-brand-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm transition hover:bg-brand-700"
-          >
-            {tCommon('ctaTryFree')}
-          </Link>
+          <div className="flex flex-col items-center gap-2">
+            <Link
+              href="/login"
+              className="rounded-lg bg-brand-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm transition hover:bg-brand-700"
+            >
+              {tCommon('ctaTryFree')}
+            </Link>
+            <Link
+              href="/login"
+              className="text-sm font-medium text-muted underline-offset-2 hover:text-ink hover:underline"
+            >
+              {t('alreadySubscribed')}
+            </Link>
+          </div>
           <LocaleLinks />
         </div>
       </section>
