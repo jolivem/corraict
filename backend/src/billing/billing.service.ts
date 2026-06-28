@@ -71,11 +71,36 @@ export class BillingService {
     return { url: session.url };
   }
 
-  async createPortalSession(userId: string, returnPath = '/billing'): Promise<{ url: string }> {
+  async createPortalSession(
+    userId: string,
+    opts: { returnPath?: string; flow?: 'cancel' } = {},
+  ): Promise<{ url: string }> {
+    const returnPath = opts.returnPath ?? '/billing';
     const customerId = await this.ensureCustomer(userId);
+
+    // flow 'cancel' : on dépose l'utilisateur directement sur l'écran de
+    // résiliation Stripe. Nécessite l'id de l'abonnement actif ; à défaut
+    // (rien à résilier), on retombe sur le portail de gestion générique.
+    const subToCancel =
+      opts.flow === 'cancel'
+        ? await this.prisma.subscription.findFirst({
+            where: { userId, status: { in: ['trialing', 'active', 'past_due'] } },
+            orderBy: { currentPeriodEnd: 'desc' },
+            select: { stripeSubId: true },
+          })
+        : null;
+
     const session = await this.stripe.requireClient().billingPortal.sessions.create({
       customer: customerId,
       return_url: `${this.env.PUBLIC_WEB_URL}${returnPath}`,
+      ...(subToCancel
+        ? {
+            flow_data: {
+              type: 'subscription_cancel' as const,
+              subscription_cancel: { subscription: subToCancel.stripeSubId },
+            },
+          }
+        : {}),
     });
     return { url: session.url };
   }

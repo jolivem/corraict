@@ -168,6 +168,31 @@ Voir [`.env.example`](.env.example) pour la liste complète. À retenir :
 - **Plans** : Pro uniquement au lancement, essai gratuit 7 jours.
 - **RGPD** : minimisation (jamais de stockage du texte corrigé), export et suppression de compte depuis le dashboard.
 
+## Facturation & Stripe — qui fait quoi
+
+Principe : **Stripe est le moteur d'argent** (facture, encaisse, génère les PDF, vire l'argent sur le compte bancaire). **Le backend ne fait que réagir** aux webhooks Stripe et garde une **copie locale** des données pour les afficher. L'app ne touche jamais ni l'argent ni les numéros de carte.
+
+| Fonction | Backend aicorrect.app | Stripe |
+|---|---|---|
+| Facturation mensuelle (renouvellement, débit, relances) | Crée l'abonnement (Checkout), miroir local de l'état via webhooks | **Tout le cycle de vie** |
+| Mail : **code de connexion** | **Envoie** (via Resend, `auth/email.service.ts`) | — |
+| Mail : reçus / factures / paiement échoué | — | **Envoie** (si activé dans le dashboard, voir ci-dessous) |
+| Virements vers le compte bancaire (payouts) | Rien (aucun code) | **Tout** (calendrier de payout du dashboard) |
+| Génération des factures + PDF | — | **Génère et héberge** |
+| Consultation des factures | **Affiche** depuis la copie locale (`Invoice`) + liens Stripe (`pdfUrl`, `hostedUrl`) | Génère/héberge les PDF |
+| Stockage des cartes | Jamais (seulement les 4 derniers chiffres) | **Stocke et sécurise** |
+
+Les factures locales sont alimentées **uniquement par les webhooks** (`invoice.created/finalized/paid/payment_failed`, voir `billing/webhook.service.ts`). Une facture dont le webhook est manqué (ex. dev local sans tunnel) n'apparaîtra pas dans le dashboard utilisateur, même si elle existe chez Stripe.
+
+### Réglages à vérifier dans le dashboard Stripe (non gérés par le code)
+
+Certains comportements dépendent **entièrement** de la configuration du compte Stripe et **ne sont pas lisibles depuis le repo**. À vérifier en **mode Live** (la config Test est séparée) :
+
+- **Customer Portal** (Settings → Billing → Customer portal) : la **résiliation** doit être activée (`subscription_cancel`), sinon le bouton « Résilier mon abonnement » — qui ouvre le portail directement sur l'écran d'annulation — échoue.
+  - Vérifié le 2026-06-28 en **mode Test** : résiliation ✅ activée (`at_period_end`), historique des factures ✅, mise à jour carte ✅, changement de plan ❌ (volontaire, un seul plan). **Mode Live non vérifié** (clé `sk_live` indisponible).
+- **Customer emails** (Settings → Customer emails) : activer les reçus de paiement et l'envoi des factures si l'on veut que les clients reçoivent un mail à chaque échéance. **Ces toggles ne sont pas exposés par l'API** → vérification manuelle obligatoire.
+- **Payouts** (Settings → Payouts) : calendrier des virements vers le compte bancaire (quotidien / hebdo / mensuel).
+
 ## Roadmap
 
 Sprints d'une semaine, ordre indicatif :

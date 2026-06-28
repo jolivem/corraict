@@ -33,7 +33,10 @@ export class BillingController {
     @Body(new ZodValidationPipe(CreatePortalSchema)) body: CreatePortalDto,
     @CurrentUser() user: AuthPrincipal,
   ) {
-    return this.billing.createPortalSession(user.userId, body.returnPath);
+    return this.billing.createPortalSession(user.userId, {
+      returnPath: body.returnPath,
+      flow: body.flow,
+    });
   }
 
   @Get('subscription')

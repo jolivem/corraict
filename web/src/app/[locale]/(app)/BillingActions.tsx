@@ -21,7 +21,7 @@ export function BillingActions({
   const [error, setError] = useState<string | null>(null);
   const [pendingTerms, setPendingTerms] = useState<ActiveTermsDto | null>(null);
 
-  async function tryCheckout(action: 'checkout' | 'portal') {
+  async function tryCheckout(action: 'checkout' | 'portal' | 'cancel') {
     setError(null);
     try {
       // Préflight CGU pour le checkout uniquement — le portal Stripe (gestion de
@@ -55,8 +55,14 @@ export function BillingActions({
               successPath: `/${locale}/billing/success`,
               cancelPath: `/${locale}/billing/cancel`,
             }
-          : {};
-      const res = await fetch(`${apiUrl()}/v1/billing/${action}`, {
+          : // 'cancel' = portail Stripe ouvert directement sur l'écran de résiliation.
+            action === 'cancel'
+            ? { flow: 'cancel' }
+            : {};
+      // 'checkout' et 'cancel' ciblent leurs endpoints respectifs ; 'cancel'
+      // réutilise l'endpoint portal avec le flag flow.
+      const endpoint = action === 'checkout' ? 'checkout' : 'portal';
+      const res = await fetch(`${apiUrl()}/v1/billing/${endpoint}`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -98,7 +104,7 @@ export function BillingActions({
     }
   }
 
-  function handleClick(action: 'checkout' | 'portal') {
+  function handleClick(action: 'checkout' | 'portal' | 'cancel') {
     startTransition(() => {
       void tryCheckout(action);
     });
@@ -126,7 +132,7 @@ export function BillingActions({
         <button
           type="button"
           disabled={pending}
-          onClick={() => handleClick('portal')}
+          onClick={() => handleClick('cancel')}
           className="text-sm font-medium text-muted underline underline-offset-2 hover:text-danger disabled:opacity-50"
         >
           {cancelLabel}
