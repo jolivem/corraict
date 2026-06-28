@@ -31,6 +31,9 @@
     <string name="toast_no_api_key">Aucune clé API configurée</string>
     <string name="toast_correcting">Correction en cours…</string>
     <string name="toast_correction_failed">Échec de la correction</string>
+    <string name="toast_nothing_to_correct">Rien à corriger</string>
+    <string name="toast_error_network">Erreur réseau</string>
+    <string name="toast_error_invalid_response">Réponse invalide du serveur</string>
     <string name="toast_quota_reached">Quota de correction atteint</string>
     <string name="dialog_subscribe_title">Veuillez vous abonner</string>
     <string name="dialog_subscribe_message">L\'accès au correcteur nécessite un abonnement. Profitez d\'une période d\'essai gratuite de 15 jours.</string>

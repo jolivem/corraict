@@ -8,6 +8,7 @@ import android.util.Patterns
 import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.button.MaterialButton
@@ -25,6 +26,7 @@ class LoginActivity : AppCompatActivity() {
 
     private lateinit var stepLogin: View
     private lateinit var stepDone: View
+    private lateinit var loginSubtitle: TextView
     private lateinit var editEmail: TextInputEditText
     private lateinit var editCode: TextInputEditText
     private lateinit var codeInputLayout: TextInputLayout
@@ -60,6 +62,7 @@ class LoginActivity : AppCompatActivity() {
 
         stepLogin = findViewById(R.id.stepLogin)
         stepDone = findViewById(R.id.stepDone)
+        loginSubtitle = findViewById(R.id.loginSubtitle)
         editEmail = findViewById(R.id.editEmail)
         editCode = findViewById(R.id.editCode)
         codeInputLayout = findViewById(R.id.codeInputLayout)
@@ -131,6 +134,8 @@ class LoginActivity : AppCompatActivity() {
             showError(getString(R.string.login_error_code))
             return
         }
+        // Le code est saisi : on masque le clavier (touche « OK » ou bouton « Valider »).
+        hideKeyboard()
         setBusy(buttonVerify, true, R.string.login_verifying)
         clearError()
         AuthClient.loginAndCreateToken(
@@ -175,6 +180,11 @@ class LoginActivity : AppCompatActivity() {
      * grisés jusque-là), sans masquer l'email. Sert aussi de renvoi : on vide le
      * champ code pour repartir propre.
      */
+    private fun hideKeyboard() {
+        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(editCode.windowToken, 0)
+    }
+
     private fun enableCodeEntry() {
         codeInputLayout.isEnabled = true
         editCode.isEnabled = true
@@ -188,6 +198,9 @@ class LoginActivity : AppCompatActivity() {
     private fun showStep(step: View) {
         stepLogin.visibility = if (step === stepLogin) View.VISIBLE else View.GONE
         stepDone.visibility = if (step === stepDone) View.VISIBLE else View.GONE
+        // La phrase d'intro « Saisissez votre email… » ne concerne que la saisie :
+        // on la masque une fois connecté (étape « stepDone »).
+        loginSubtitle.visibility = if (step === stepLogin) View.VISIBLE else View.GONE
         clearError()
     }
 

@@ -899,7 +899,7 @@ class CorrectKeyboardService : InputMethodService() {
         Log.i(TAG, "applyCorrection : original=\"${original.take(120)}\"")
         if (original.isBlank()) {
             Log.w(TAG, "applyCorrection : texte vide → 'Rien à corriger'")
-            Toast.makeText(this, "Rien à corriger", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, R.string.toast_nothing_to_correct, Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -1146,12 +1146,18 @@ class CorrectKeyboardService : InputMethodService() {
                 // Quota atteint (cas résiduel) : message dédié, sans préfixe « Échec… ».
                 CorrectionAction.ShowQuotaToast ->
                     Toast.makeText(this, R.string.toast_quota_reached, Toast.LENGTH_LONG).show()
-                CorrectionAction.ShowGenericFailure ->
-                    Toast.makeText(
-                        this,
-                        "${getString(R.string.toast_correction_failed)} : $err",
-                        Toast.LENGTH_LONG,
-                    ).show()
+                CorrectionAction.ShowGenericFailure -> {
+                    // Détail localisé pour les échecs côté client (réseau / réponse
+                    // invalide) ; sinon on garde le message remonté par le serveur.
+                    val detail = when (result.errorCode) {
+                        "network_error" -> getString(R.string.toast_error_network)
+                        "invalid_response" -> getString(R.string.toast_error_invalid_response)
+                        else -> err
+                    }
+                    val prefix = getString(R.string.toast_correction_failed)
+                    val msg = if (detail.isBlank()) prefix else "$prefix : $detail"
+                    Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+                }
             }
         }
     }

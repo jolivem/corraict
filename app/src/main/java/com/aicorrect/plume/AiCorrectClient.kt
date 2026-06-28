@@ -75,7 +75,9 @@ object AiCorrectClient {
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                onError(e.message ?: "Erreur réseau", "")
+                // Pas de Context ici (couche réseau) : on remonte un code stable,
+                // le message localisé est choisi par l'appelant (keyboard service).
+                onError(e.message ?: "", "network_error")
             }
 
             override fun onResponse(call: Call, response: Response) {
@@ -86,7 +88,7 @@ object AiCorrectClient {
                             val corrected = JSONObject(raw).getString("corrected").trim()
                             onSuccess(corrected)
                         } catch (ex: Exception) {
-                            onError("Réponse invalide du serveur", "")
+                            onError("", "invalid_response")
                         }
                         return
                     }
