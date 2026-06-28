@@ -49,14 +49,20 @@ export default async function LocaleLayout({
           <div className="flex items-center gap-3">
             <Link
               href="/"
-              className="shrink-0 text-base font-semibold text-ink hover:text-ink-strong sm:text-lg"
+              aria-label={t('appName')}
+              className="shrink-0 text-base font-semibold leading-tight hover:opacity-80 sm:text-lg"
             >
-              {t('appName')}
+              {/* « AiCorrect » dans le bleu des lettres « abc » du logo Android (#8FB8E0). */}
+              <span className="block text-ink">Plume</span>
+              <span className="block text-[#8FB8E0]">AiCorrect</span>
             </Link>
             <HeaderNav />
           </div>
           <div className="flex items-center gap-3">
-            <HeaderAuth />
+            {/* Sur mobile, « Se déconnecter » est dans le menu hamburger (HeaderNav). */}
+            <div className="hidden sm:block">
+              <HeaderAuth />
+            </div>
             <LocaleSwitcher />
           </div>
         </div>

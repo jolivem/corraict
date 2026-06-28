@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
-import { Link, usePathname } from '@/i18n/routing';
+import { Link, usePathname, useRouter } from '@/i18n/routing';
 import { apiUrl } from '@/lib/api';
 
 /**
@@ -21,8 +21,23 @@ const NAV_ITEMS = [
 export function HeaderNav() {
   const t = useTranslations('Common');
   const pathname = usePathname();
+  const router = useRouter();
   const [authed, setAuthed] = useState(false);
   const [open, setOpen] = useState(false);
+  const [pending, startTransition] = useTransition();
+
+  function logout() {
+    startTransition(async () => {
+      await fetch(`${apiUrl()}/v1/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      setOpen(false);
+      setAuthed(false);
+      router.push('/');
+      router.refresh();
+    });
+  }
 
   useEffect(() => {
     let active = true;
@@ -87,6 +102,16 @@ export function HeaderNav() {
               </Link>
             </li>
           ))}
+          <li className="mt-1 border-t border-line pt-1">
+            <button
+              type="button"
+              disabled={pending}
+              onClick={logout}
+              className="block w-full rounded-md px-3 py-2 text-left text-sm font-medium text-body hover:bg-surface-muted disabled:opacity-50"
+            >
+              {pending ? t('loading') : t('logout')}
+            </button>
+          </li>
         </ul>
       )}
     </nav>

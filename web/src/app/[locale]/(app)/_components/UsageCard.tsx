@@ -19,21 +19,21 @@ export async function UsageCard({
 
   const current = usage?.currentMonth;
   const history = usage?.recentMonths ?? [];
+
+  // Aucune correction enregistrée → on masque entièrement la carte Utilisation.
+  if (!current || (current.requests === 0 && history.length === 0)) {
+    return null;
+  }
+
   const maxRequests = Math.max(1, ...history.map((m) => m.requests));
-  const used = current?.requests ?? 0;
+  const used = current.requests;
   const pct = quotaLimit ? Math.min(100, Math.round((used / quotaLimit) * 100)) : 0;
   const nearLimit = quotaLimit !== null && pct >= 80;
 
   return (
     <section className="rounded-2xl border border-line bg-surface p-6">
       <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">{t('usageTitle')}</h2>
-      {!current || (current.requests === 0 && history.length === 0) ? (
-        <div className="mt-4 rounded-lg bg-surface-muted px-4 py-3 text-sm text-muted">
-          {t('usageEmpty')}
-        </div>
-      ) : (
-        <>
-          <div className="mt-4">
+      <div className="mt-4">
             <p className="text-xs uppercase tracking-wide text-muted">
               {t('usageCurrentMonth')} · {formatMonth(current.yearMonth)}
             </p>
@@ -82,8 +82,6 @@ export async function UsageCard({
               </ul>
             </div>
           )}
-        </>
-      )}
     </section>
   );
 }
